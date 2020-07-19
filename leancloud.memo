@@ -1,7 +1,9 @@
 [
+{"title":"使用Hexo + GitHub Pages搭建个人博客详解","url":"/2016/10/01/Building-my-blog-by-Hexo-and-GitHubPages/"},
 {"title":"详解Java开发环境配置","url":"/2016/10/05/Configurating-java-development-environment/"},
 {"title":"Firebase笔记(一)-初探Firebase","url":"/2016/10/08/Study-on-firebase/"},
 {"title":"Firebase笔记(二)-Remote Config的简单使用","url":"/2016/10/11/Study-on-RemoteConfig-Basics/"},
+{"title":"SQLite基础学习总结","url":"/2016/12/29/Learning-summary-of-SQLite/"},
 {"title":"Android ORM框架学习-greenDAO的基本使用","url":"/2017/01/05/Learn-tp-use-greenDAO/"},
 {"title":"ConstraintLayout学习小结","url":"/2017/07/16/constraintlayout/"},
 {"title":"RXJava笔记——相关术语","url":"/2018/03/27/rxjava-terminology/"},
