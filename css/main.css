@@ -515,7 +515,8 @@ code {
   overflow-wrap: break-word;
 }
 kbd {
-  border: 2px solid #ccc;
+  background-image: linear-gradient(var(--highlight-gutter-background), var(--highlight-background), var(--highlight-gutter-background));
+  border: 1px solid #ccc;
   border-radius: 0.2em;
   box-shadow: 0.1em 0.1em 0.2em rgba(0,0,0,0.1);
   font-family: inherit;
@@ -1319,7 +1320,7 @@ pre code {
   }
 }
 .use-motion .menu-item {
-  visibility: hidden;
+  opacity: 0;
 }
 .github-corner :hover .octo-arm {
   animation: octocat-wave 560ms ease-in-out;
@@ -1791,7 +1792,7 @@ pre code {
 }
 .reading-progress-bar {
   background: #37c6c0;
-  height: 2px;
+  height: 1px;
   left: 0;
   position: fixed;
   width: 0;
@@ -1831,16 +1832,16 @@ pre code {
 .use-motion .post-block,
 .use-motion .pagination,
 .use-motion .comments {
-  visibility: hidden;
+  opacity: 0;
 }
 .use-motion .post-header {
-  visibility: hidden;
+  opacity: 0;
 }
 .use-motion .post-body {
-  visibility: hidden;
+  opacity: 0;
 }
 .use-motion .collection-header {
-  visibility: hidden;
+  opacity: 0;
 }
 .posts-collapse {
   margin-left: 35px;
@@ -2515,9 +2516,6 @@ ul.breadcrumb li + li:last-child {
   border-bottom-color: #111;
   color: #111;
 }
-.use-motion .animated {
-  visibility: inherit;
-}
 .header {
   align-self: stretch;
 }
@@ -2695,7 +2693,7 @@ ul.breadcrumb li + li:last-child {
   position: sticky;
   top: 12px;
   width: 240px;
-  visibility: hidden;
+  opacity: 0;
 }
 @media (max-width: 991px) {
   .sidebar {

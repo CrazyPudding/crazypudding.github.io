@@ -45,7 +45,7 @@ NexT.utils = {
 
   registerExtURL: function() {
     document.querySelectorAll('span.exturl').forEach(element => {
-      const link = document.createElement('a');
+      let link = document.createElement('a');
       // https://stackoverflow.com/questions/30106476/using-javascripts-atob-to-decode-base64-doesnt-properly-decode-utf-8-strings
       link.href = decodeURIComponent(atob(element.dataset.url).split('').map(c => {
         return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
@@ -66,7 +66,6 @@ NexT.utils = {
     document.querySelectorAll('figure.highlight').forEach(element => {
       element.querySelectorAll('.code .line span').forEach(span => {
         span.classList.forEach(name => {
-          // https://caniuse.com/#feat=mdn-api_element_classlist_replace
           span.classList.remove(name);
           span.classList.add(`hljs-${name}`);
         });
@@ -122,8 +121,8 @@ NexT.utils = {
         const box = document.createElement('div');
         box.className = 'video-container';
         element.wrap(box);
-        const width = Number(element.width);
-        const height = Number(element.height);
+        let width = Number(element.width);
+        let height = Number(element.height);
         if (width && height) {
           box.style.paddingTop = (height / width * 100) + '%';
         }
@@ -139,8 +138,8 @@ NexT.utils = {
       if (backToTop || readingProgressBar) {
         const docHeight = document.querySelector('.container').offsetHeight;
         const winHeight = window.innerHeight;
-        const contentHeight = docHeight > winHeight ? docHeight - winHeight : document.body.scrollHeight - winHeight;
-        const scrollPercent = contentHeight > 0 ? Math.min(100 * window.scrollY / contentHeight, 100) : 0;
+        const contentVisibilityHeight = docHeight > winHeight ? docHeight - winHeight : document.body.scrollHeight - winHeight;
+        const scrollPercent = Math.min(100 * window.scrollY / contentVisibilityHeight, 100);
         if (backToTop) {
           backToTop.classList.toggle('back-to-top-on', Math.round(scrollPercent) >= 5);
           backToTop.querySelector('span').innerText = Math.round(scrollPercent) + '%';
@@ -222,17 +221,14 @@ NexT.utils = {
   },
 
   registerLangSelect: function() {
-    const selects = document.querySelectorAll('.lang-select');
-    selects.forEach(sel => {
-      sel.value = CONFIG.page.lang;
-      sel.addEventListener('change', () => {
-        const target = sel.options[sel.selectedIndex];
-        document.querySelectorAll('.lang-select-label span').forEach(span => {
-          span.innerText = target.text;
-        });
-        // Disable Pjax to force refresh translation of menu item
-        window.location.href = target.dataset.href;
-      });
+    let sel = document.querySelector('.lang-select');
+    if (!sel) return;
+    sel.value = CONFIG.page.lang;
+    sel.addEventListener('change', () => {
+      let target = sel.options[sel.selectedIndex];
+      document.querySelector('.lang-select-label span').innerText = target.text;
+      let url = target.dataset.href;
+      window.pjax ? window.pjax.loadUrl(url) : window.location.href = url;
     });
   },
 
@@ -278,22 +274,11 @@ NexT.utils = {
   },
 
   supportsPDFs: function() {
-    const ua = navigator.userAgent;
-    const isFirefoxWithPDFJS = ua.includes('irefox') && parseInt(ua.split('rv:')[1].split('.')[0], 10) > 18;
-    const supportsPdfMimeType = typeof navigator.mimeTypes['application/pdf'] !== 'undefined';
-    const isIOS = /iphone|ipad|ipod/i.test(ua.toLowerCase());
+    let ua = navigator.userAgent;
+    let isFirefoxWithPDFJS = ua.includes('irefox') && parseInt(ua.split('rv:')[1].split('.')[0], 10) > 18;
+    let supportsPdfMimeType = typeof navigator.mimeTypes['application/pdf'] !== 'undefined';
+    let isIOS = /iphone|ipad|ipod/i.test(ua.toLowerCase());
     return isFirefoxWithPDFJS || (supportsPdfMimeType && !isIOS);
-  },
-
-  getComputedStyle: function(element) {
-    const clone = element.cloneNode(true);
-    clone.style.position = 'absolute';
-    clone.style.visibility = 'hidden';
-    clone.style.display = 'block';
-    element.parentNode.appendChild(clone);
-    const height = clone.clientHeight;
-    element.parentNode.removeChild(clone);
-    return height;
   },
 
   /**
@@ -303,10 +288,9 @@ NexT.utils = {
   initSidebarDimension: function() {
     const sidebarNav = document.querySelector('.sidebar-nav');
     const sidebarb2t = document.querySelector('.sidebar-inner .back-to-top');
-    const sidebarNavHeight = sidebarNav ? sidebarNav.offsetHeight : 0;
     const sidebarb2tHeight = sidebarb2t ? sidebarb2t.offsetHeight : 0;
     const sidebarOffset = CONFIG.sidebar.offset || 12;
-    let sidebarSchemePadding = (CONFIG.sidebar.padding * 2) + sidebarNavHeight + sidebarb2tHeight;
+    let sidebarSchemePadding = (CONFIG.sidebar.padding * 2) + sidebarNav.offsetHeight + sidebarb2tHeight;
     if (CONFIG.scheme === 'Pisces' || CONFIG.scheme === 'Gemini') sidebarSchemePadding += sidebarOffset * 2;
     // Initialize Sidebar & TOC Height.
     const sidebarWrapperHeight = document.body.offsetHeight - sidebarSchemePadding + 'px';
@@ -350,8 +334,8 @@ NexT.utils = {
       callback();
       return;
     }
-    const intersectionObserver = new IntersectionObserver((entries, observer) => {
-      const entry = entries[0];
+    let intersectionObserver = new IntersectionObserver((entries, observer) => {
+      let entry = entries[0];
       if (entry.isIntersecting) {
         callback();
         observer.disconnect();

@@ -1,4 +1,4 @@
-/* global NexT, CONFIG */
+/* global NexT, CONFIG, Velocity */
 
 NexT.boot = {};
 
@@ -12,38 +12,21 @@ NexT.boot.registerEvents = function() {
     event.currentTarget.classList.toggle('toggle-close');
     const siteNav = document.querySelector('.site-nav');
     if (!siteNav) return;
-    const animateAction = siteNav.classList.contains('site-nav-on');
-    const height = NexT.utils.getComputedStyle(siteNav);
-    siteNav.style.height = animateAction ? height : 0;
-    const toggle = () => siteNav.classList.toggle('site-nav-on');
-    const begin = () => {
-      siteNav.style.overflow = 'hidden';
-    };
-    const complete = () => {
-      siteNav.style.overflow = '';
-      siteNav.style.height = '';
-    };
-    window.anime(Object.assign({
-      targets : siteNav,
-      duration: 200,
-      height  : animateAction ? [height, 0] : [0, height],
-      easing  : 'linear'
-    }, animateAction ? {
-      begin,
-      complete: () => {
-        complete();
-        toggle();
-      }
-    } : {
-      begin: () => {
-        begin();
-        toggle();
-      },
-      complete
-    }));
+    const animateAction = siteNav.classList.contains('site-nav-on') ? 'slideUp' : 'slideDown';
+
+    if (typeof Velocity === 'function') {
+      Velocity(siteNav, animateAction, {
+        duration: 200,
+        complete: function() {
+          siteNav.classList.toggle('site-nav-on');
+        }
+      });
+    } else {
+      siteNav.classList.toggle('site-nav-on');
+    }
   });
 
-  const duration = 200;
+  const TAB_ANIMATE_DURATION = 200;
   document.querySelectorAll('.sidebar-nav li').forEach((element, index) => {
     element.addEventListener('click', event => {
       const item = event.currentTarget;
@@ -53,21 +36,20 @@ NexT.boot.registerEvents = function() {
       const activeClassName = ['sidebar-toc-active', 'sidebar-overview-active'];
 
       window.anime({
-        duration,
-        targets   : panel[1 - index],
-        easing    : 'linear',
-        opacity   : 0,
-        translateY: [0, -20],
-        complete  : () => {
+        targets : panel[1 - index],
+        duration: TAB_ANIMATE_DURATION,
+        easing  : 'linear',
+        opacity : 0,
+        complete: () => {
           // Prevent adding TOC to Overview if Overview was selected when close & open sidebar.
           sidebar.classList.remove(activeClassName[1 - index]);
+          panel[index].style.opacity = 0;
           sidebar.classList.add(activeClassName[index]);
           window.anime({
-            duration,
-            targets   : panel[index],
-            easing    : 'linear',
-            opacity   : [0, 1],
-            translateY: [-20, 0]
+            targets : panel[index],
+            duration: TAB_ANIMATE_DURATION,
+            easing  : 'linear',
+            opacity : 1
           });
         }
       });
@@ -89,7 +71,7 @@ NexT.boot.refresh = function() {
 
   /**
    * Register JS handlers by condition option.
-   * Need to add config option in Front-End at 'scripts/helpers/next-config.js' file.
+   * Need to add config option in Front-End at 'layout/_partials/head.njk' file.
    */
   CONFIG.prism && window.Prism.highlightAll();
   CONFIG.fancybox && NexT.utils.wrapImageWithFancyBox();
@@ -113,7 +95,8 @@ NexT.boot.motion = function() {
   // Define Motion Sequence & Bootstrap Motion.
   if (CONFIG.motion.enable) {
     NexT.motion.integrator
-      .add(NexT.motion.middleWares.header)
+      .add(NexT.motion.middleWares.logo)
+      .add(NexT.motion.middleWares.menu)
       .add(NexT.motion.middleWares.postList)
       .add(NexT.motion.middleWares.sidebar)
       .add(NexT.motion.middleWares.footer)

@@ -15,12 +15,10 @@
 
 <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Dancing Script:300,300italic,400,400italic,700,700italic|Source Code Pro:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
 <link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
-  
-  <link rel="stylesheet" href="/lib/animate-css/animate.min.css">
 
-<script class="hexo-configurations">
+<script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"crazypudding.github.io","root":"/","scheme":"Gemini","version":"8.0.0-rc.4","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":true,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"disqus","storage":true,"lazyload":false,"nav":null,"activeClass":"disqus"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}}};
+    var CONFIG = {"hostname":"crazypudding.github.io","root":"/","scheme":"Gemini","version":"8.0.0-rc.4","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"disqus","storage":true,"lazyload":false,"nav":null,"activeClass":"disqus"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
   <meta name="description" content="前言其实我的博客在今年6月份就开始搭建了，当时是参加了Google的studyjams活动，有一个阶段就是需要搭建自己的个人博客，在那之前，我并没有真正接触过博客，虽然之前有接触过一些编程方面的知识，但也是在那时候，真正开启了我的编程之旅。好像有点扯了，回归正途，当时由于活动需要，我跟着博主Sunwhut的如何利用GitHub Pages和Hexo快速搭建个人博客走了一遍，大致弄出了博客的雏形，不">
@@ -50,7 +48,7 @@
 <link rel="canonical" href="http://crazypudding.github.io/2016/10/01/Building-my-blog-by-Hexo-and-GitHubPages/">
 
 
-<script class="page-configurations">
+<script id="page-configurations">
   // https://hexo.io/docs/variables.html
   CONFIG.page = {
     sidebar: "",
@@ -90,6 +88,8 @@
   <style>
   body { margin-top: 2rem; }
 
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
   .use-motion .menu-item,
   .use-motion .sidebar,
   .use-motion .post-block,
@@ -97,12 +97,7 @@
   .use-motion .comments,
   .use-motion .post-header,
   .use-motion .post-body,
-  .use-motion .collection-header {
-    visibility: visible;
-  }
-
-  .use-motion .header,
-  .use-motion .site-brand-container .toggle,
+  .use-motion .collection-header,
   .use-motion .footer { opacity: initial; }
 
   .use-motion .site-title,
@@ -157,19 +152,9 @@
 
 <nav class="site-nav">
   <ul id="menu" class="main-menu menu">
-        <li class="menu-item menu-item-home">
-
-    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
-
-  </li>
         <li class="menu-item menu-item-tags">
 
     <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
-
-  </li>
-        <li class="menu-item menu-item-archives">
-
-    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
 
   </li>
   </ul>
@@ -201,22 +186,21 @@
 
       <!--noindex-->
       <section class="post-toc-wrap sidebar-panel">
-          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#基础环境准备"><span class="nav-number">2.</span> <span class="nav-text">基础环境准备</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-GitHub-Pages"><span class="nav-number">2.1.</span> <span class="nav-text">1.GitHub Pages</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-Git"><span class="nav-number">2.2.</span> <span class="nav-text">2.Git</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-Hexo"><span class="nav-number">2.3.</span> <span class="nav-text">3.Hexo</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#搭建过程"><span class="nav-number">3.</span> <span class="nav-text">搭建过程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-GitHub-Pages相关配置"><span class="nav-number">3.1.</span> <span class="nav-text">1.GitHub Pages相关配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-安装Git-for-Windows"><span class="nav-number">3.2.</span> <span class="nav-text">2.安装Git for Windows</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-配置Hexo"><span class="nav-number">3.3.</span> <span class="nav-text">3.配置Hexo</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-部署Hexo到GitHub"><span class="nav-number">3.4.</span> <span class="nav-text">4.部署Hexo到GitHub</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#发表你的博文"><span class="nav-number">4.</span> <span class="nav-text">发表你的博文</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#学会使用Markdown格式书写"><span class="nav-number">4.1.</span> <span class="nav-text">学会使用Markdown格式书写</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#新建博文"><span class="nav-number">4.2.</span> <span class="nav-text">新建博文</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#美化主题"><span class="nav-number">5.</span> <span class="nav-text">美化主题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#为博客选择图床"><span class="nav-number">6.</span> <span class="nav-text">为博客选择图床</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#将博客同时部署到Coding"><span class="nav-number">7.</span> <span class="nav-text">将博客同时部署到Coding</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#后记"><span class="nav-number">8.</span> <span class="nav-text">后记</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#基础环境准备"><span class="nav-number">2.</span> <span class="nav-text">基础环境准备</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-GitHub-Pages"><span class="nav-number">2.1.</span> <span class="nav-text">1.GitHub Pages</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-Git"><span class="nav-number">2.2.</span> <span class="nav-text">2.Git</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-Hexo"><span class="nav-number">2.3.</span> <span class="nav-text">3.Hexo</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#搭建过程"><span class="nav-number">3.</span> <span class="nav-text">搭建过程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-GitHub-Pages相关配置"><span class="nav-number">3.1.</span> <span class="nav-text">1.GitHub Pages相关配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-安装Git-for-Windows"><span class="nav-number">3.2.</span> <span class="nav-text">2.安装Git for Windows</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-配置Hexo"><span class="nav-number">3.3.</span> <span class="nav-text">3.配置Hexo</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-部署Hexo到GitHub"><span class="nav-number">3.4.</span> <span class="nav-text">4.部署Hexo到GitHub</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#发表你的博文"><span class="nav-number">4.</span> <span class="nav-text">发表你的博文</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#学会使用Markdown格式书写"><span class="nav-number">4.1.</span> <span class="nav-text">学会使用Markdown格式书写</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#新建博文"><span class="nav-number">4.2.</span> <span class="nav-text">新建博文</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#美化主题"><span class="nav-number">5.</span> <span class="nav-text">美化主题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#为博客选择图床"><span class="nav-number">6.</span> <span class="nav-text">为博客选择图床</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#将博客同时部署到Coding"><span class="nav-number">7.</span> <span class="nav-text">将博客同时部署到Coding</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#后记"><span class="nav-number">8.</span> <span class="nav-text">后记</span></a></li></ol></div>
       </section>
       <!--/noindex-->
 
       <section class="site-overview-wrap sidebar-panel">
-        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image" alt="Crazypudding"
       src="/images/avatar.jpg">
   <p class="site-author-name" itemprop="name">Crazypudding</p>
   <div class="site-description" itemprop="description">有道无术术尚可求，有术无道止于术</div>
 </div>
-<div class="site-state-wrap animated">
+<div class="site-state-wrap motion-element">
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
-          <a href="/archives/">
-        
+          <a href="/archives">
           <span class="site-state-item-count">12</span>
           <span class="site-state-item-name">日志</span>
         </a>
@@ -229,7 +213,7 @@
       </div>
   </nav>
 </div>
-  <div class="links-of-author animated">
+  <div class="links-of-author motion-element">
       <span class="links-of-author-item">
         <a href="https://github.com/crazypudding" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;crazypudding" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
       </span>
@@ -670,7 +654,8 @@
 
   
   <script src="/lib/anime.min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/medium-zoom@1/dist/medium-zoom.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
 
 <script src="/js/utils.js"></script>
 

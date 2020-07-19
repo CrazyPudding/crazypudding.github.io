@@ -15,12 +15,10 @@
 
 <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Dancing Script:300,300italic,400,400italic,700,700italic|Source Code Pro:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
 <link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
-  
-  <link rel="stylesheet" href="/lib/animate-css/animate.min.css">
 
-<script class="hexo-configurations">
+<script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"crazypudding.github.io","root":"/","scheme":"Gemini","version":"8.0.0-rc.4","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":true,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"disqus","storage":true,"lazyload":false,"nav":null,"activeClass":"disqus"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}}};
+    var CONFIG = {"hostname":"crazypudding.github.io","root":"/","scheme":"Gemini","version":"8.0.0-rc.4","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"disqus","storage":true,"lazyload":false,"nav":null,"activeClass":"disqus"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
   <meta name="description" content="Android内置了SQLite数据库，而且可以利用JDBC对数据库进行操作，还提供了一个辅助类SQLiteOpenHelper对SQLite进行了简单的封装，但是一遍一遍的重复调用不仅枯燥而且敲代码的效率也很难上去。所以聪明的人类又想到把数据库底层进一步封装起来，只把操作接口，比如增删改查这一类的暴露给开发者，这样一来，不仅提升了开发效率，而且开发者不需要再花心思去关注底层逻辑实现了。这一类封装">
@@ -51,7 +49,7 @@
 <link rel="canonical" href="http://crazypudding.github.io/2017/01/05/Learn-tp-use-greenDAO/">
 
 
-<script class="page-configurations">
+<script id="page-configurations">
   // https://hexo.io/docs/variables.html
   CONFIG.page = {
     sidebar: "",
@@ -91,6 +89,8 @@
   <style>
   body { margin-top: 2rem; }
 
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
   .use-motion .menu-item,
   .use-motion .sidebar,
   .use-motion .post-block,
@@ -98,12 +98,7 @@
   .use-motion .comments,
   .use-motion .post-header,
   .use-motion .post-body,
-  .use-motion .collection-header {
-    visibility: visible;
-  }
-
-  .use-motion .header,
-  .use-motion .site-brand-container .toggle,
+  .use-motion .collection-header,
   .use-motion .footer { opacity: initial; }
 
   .use-motion .site-title,
@@ -158,19 +153,9 @@
 
 <nav class="site-nav">
   <ul id="menu" class="main-menu menu">
-        <li class="menu-item menu-item-home">
-
-    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
-
-  </li>
         <li class="menu-item menu-item-tags">
 
     <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
-
-  </li>
-        <li class="menu-item menu-item-archives">
-
-    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
 
   </li>
   </ul>
@@ -202,22 +187,21 @@
 
       <!--noindex-->
       <section class="post-toc-wrap sidebar-panel">
-          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#greenDAO是什么"><span class="nav-number">1.</span> <span class="nav-text">greenDAO是什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#为项目添加greenDAO的Gradle插件"><span class="nav-number">2.</span> <span class="nav-text">为项目添加greenDAO的Gradle插件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#greenDAO的基本注解"><span class="nav-number">3.</span> <span class="nav-text">greenDAO的基本注解</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#grenDAO生成的类"><span class="nav-number">4.</span> <span class="nav-text">grenDAO生成的类</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#greenDAO的使用"><span class="nav-number">5.</span> <span class="nav-text">greenDAO的使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#初始化green-DAO"><span class="nav-number">5.1.</span> <span class="nav-text">初始化green DAO</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#增"><span class="nav-number">5.2.</span> <span class="nav-text">增</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#删"><span class="nav-number">5.3.</span> <span class="nav-text">删</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#改"><span class="nav-number">5.4.</span> <span class="nav-text">改</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#查"><span class="nav-number">5.5.</span> <span class="nav-text">查</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#greenDAO是什么"><span class="nav-number">1.</span> <span class="nav-text">greenDAO是什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#为项目添加greenDAO的Gradle插件"><span class="nav-number">2.</span> <span class="nav-text">为项目添加greenDAO的Gradle插件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#greenDAO的基本注解"><span class="nav-number">3.</span> <span class="nav-text">greenDAO的基本注解</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#grenDAO生成的类"><span class="nav-number">4.</span> <span class="nav-text">grenDAO生成的类</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#greenDAO的使用"><span class="nav-number">5.</span> <span class="nav-text">greenDAO的使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#初始化green-DAO"><span class="nav-number">5.1.</span> <span class="nav-text">初始化green DAO</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#增"><span class="nav-number">5.2.</span> <span class="nav-text">增</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#删"><span class="nav-number">5.3.</span> <span class="nav-text">删</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#改"><span class="nav-number">5.4.</span> <span class="nav-text">改</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#查"><span class="nav-number">5.5.</span> <span class="nav-text">查</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a></li></ol></div>
       </section>
       <!--/noindex-->
 
       <section class="site-overview-wrap sidebar-panel">
-        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image" alt="Crazypudding"
       src="/images/avatar.jpg">
   <p class="site-author-name" itemprop="name">Crazypudding</p>
   <div class="site-description" itemprop="description">有道无术术尚可求，有术无道止于术</div>
 </div>
-<div class="site-state-wrap animated">
+<div class="site-state-wrap motion-element">
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
-          <a href="/archives/">
-        
+          <a href="/archives">
           <span class="site-state-item-count">12</span>
           <span class="site-state-item-name">日志</span>
         </a>
@@ -230,7 +214,7 @@
       </div>
   </nav>
 </div>
-  <div class="links-of-author animated">
+  <div class="links-of-author motion-element">
       <span class="links-of-author-item">
         <a href="https://github.com/crazypudding" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;crazypudding" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
       </span>
@@ -641,7 +625,8 @@
 
   
   <script src="/lib/anime.min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/medium-zoom@1/dist/medium-zoom.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
 
 <script src="/js/utils.js"></script>
 

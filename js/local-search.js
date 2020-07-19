@@ -17,15 +17,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const getIndexByWord = (word, text, caseSensitive) => {
     if (CONFIG.localsearch.unescape) {
-      const div = document.createElement('div');
+      let div = document.createElement('div');
       div.innerText = word;
       word = div.innerHTML;
     }
-    const wordLen = word.length;
+    let wordLen = word.length;
     if (wordLen === 0) return [];
     let startPosition = 0;
     let position = [];
-    const index = [];
+    let index = [];
     if (!caseSensitive) {
       text = text.toLowerCase();
       word = word.toLowerCase();
@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const mergeIntoSlice = (start, end, index, searchText) => {
     let item = index[index.length - 1];
     let { position, word } = item;
-    const hits = [];
+    let hits = [];
     let searchTextCountInSlice = 0;
     while (position + word.length <= end && index.length !== 0) {
       if (word === searchText) {
@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
         position,
         length: word.length
       });
-      const wordEnd = position + word.length;
+      let wordEnd = position + word.length;
 
       // Move to next position of hit
       index.pop();
@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let prevEnd = slice.start;
     slice.hits.forEach(hit => {
       result += text.substring(prevEnd, hit.position);
-      const end = hit.position + hit.length;
+      let end = hit.position + hit.length;
       result += `<b class="search-keyword">${text.substring(hit.position, end)}</b>`;
       prevEnd = end;
     });
@@ -90,17 +90,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const inputEventFunction = () => {
     if (!isfetched) return;
-    const searchText = input.value.trim().toLowerCase();
-    const keywords = searchText.split(/[-\s]+/);
+    let searchText = input.value.trim().toLowerCase();
+    let keywords = searchText.split(/[-\s]+/);
     if (keywords.length > 1) {
       keywords.push(searchText);
     }
-    const resultItems = [];
+    let resultItems = [];
     if (searchText.length > 0) {
       // Perform local searching
       datas.forEach(({ title, content, url }) => {
-        const titleInLowerCase = title.toLowerCase();
-        const contentInLowerCase = content.toLowerCase();
+        let titleInLowerCase = title.toLowerCase();
+        let contentInLowerCase = content.toLowerCase();
         let indexOfTitle = [];
         let indexOfContent = [];
         let searchTextCount = 0;
@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Show search results
         if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
-          const hitCount = indexOfTitle.length + indexOfContent.length;
+          let hitCount = indexOfTitle.length + indexOfContent.length;
           // Sort index by position of keyword
           [indexOfTitle, indexOfContent].forEach(index => {
             index.sort((itemLeft, itemRight) => {
@@ -122,17 +122,17 @@ document.addEventListener('DOMContentLoaded', () => {
             });
           });
 
-          const slicesOfTitle = [];
+          let slicesOfTitle = [];
           if (indexOfTitle.length !== 0) {
-            const tmp = mergeIntoSlice(0, title.length, indexOfTitle, searchText);
+            let tmp = mergeIntoSlice(0, title.length, indexOfTitle, searchText);
             searchTextCount += tmp.searchTextCountInSlice;
             slicesOfTitle.push(tmp);
           }
 
           let slicesOfContent = [];
           while (indexOfContent.length !== 0) {
-            const item = indexOfContent[indexOfContent.length - 1];
-            const { position, word } = item;
+            let item = indexOfContent[indexOfContent.length - 1];
+            let { position, word } = item;
             // Cut out 100 characters
             let start = position - 20;
             let end = position + 80;
@@ -145,7 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (end > content.length) {
               end = content.length;
             }
-            const tmp = mergeIntoSlice(start, end, indexOfContent, searchText);
+            let tmp = mergeIntoSlice(start, end, indexOfContent, searchText);
             searchTextCount += tmp.searchTextCountInSlice;
             slicesOfContent.push(tmp);
           }
@@ -161,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
           });
 
           // Select top N slices in content
-          const upperBound = parseInt(CONFIG.localsearch.top_n_per_article, 10);
+          let upperBound = parseInt(CONFIG.localsearch.top_n_per_article, 10);
           if (upperBound >= 0) {
             slicesOfContent = slicesOfContent.slice(0, upperBound);
           }

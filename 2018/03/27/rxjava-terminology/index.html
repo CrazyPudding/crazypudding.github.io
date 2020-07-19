@@ -15,12 +15,10 @@
 
 <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Dancing Script:300,300italic,400,400italic,700,700italic|Source Code Pro:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
 <link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
-  
-  <link rel="stylesheet" href="/lib/animate-css/animate.min.css">
 
-<script class="hexo-configurations">
+<script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"crazypudding.github.io","root":"/","scheme":"Gemini","version":"8.0.0-rc.4","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":true,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"disqus","storage":true,"lazyload":false,"nav":null,"activeClass":"disqus"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}}};
+    var CONFIG = {"hostname":"crazypudding.github.io","root":"/","scheme":"Gemini","version":"8.0.0-rc.4","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"disqus","storage":true,"lazyload":false,"nav":null,"activeClass":"disqus"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
   <meta name="description" content="RXJava相关术语Upstream（上游）,DownStream（下游）RXJava 中的数据流由数据源和 0 或多个连续的立即执行的操作或组合操作组成： 123source.operator1().operator2().operator3().subscribe(consumer);source.flatMap(value -&gt; source.operator1().operator2">
@@ -40,7 +38,7 @@
 <link rel="canonical" href="http://crazypudding.github.io/2018/03/27/rxjava-terminology/">
 
 
-<script class="page-configurations">
+<script id="page-configurations">
   // https://hexo.io/docs/variables.html
   CONFIG.page = {
     sidebar: "",
@@ -80,6 +78,8 @@
   <style>
   body { margin-top: 2rem; }
 
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
   .use-motion .menu-item,
   .use-motion .sidebar,
   .use-motion .post-block,
@@ -87,12 +87,7 @@
   .use-motion .comments,
   .use-motion .post-header,
   .use-motion .post-body,
-  .use-motion .collection-header {
-    visibility: visible;
-  }
-
-  .use-motion .header,
-  .use-motion .site-brand-container .toggle,
+  .use-motion .collection-header,
   .use-motion .footer { opacity: initial; }
 
   .use-motion .site-title,
@@ -147,19 +142,9 @@
 
 <nav class="site-nav">
   <ul id="menu" class="main-menu menu">
-        <li class="menu-item menu-item-home">
-
-    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
-
-  </li>
         <li class="menu-item menu-item-tags">
 
     <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
-
-  </li>
-        <li class="menu-item menu-item-archives">
-
-    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
 
   </li>
   </ul>
@@ -191,22 +176,21 @@
 
       <!--noindex-->
       <section class="post-toc-wrap sidebar-panel">
-          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#RXJava相关术语"><span class="nav-number">1.</span> <span class="nav-text">RXJava相关术语</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Upstream（上游）-DownStream（下游）"><span class="nav-number">1.1.</span> <span class="nav-text">Upstream（上游）,DownStream（下游）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#运动中的对象"><span class="nav-number">1.2.</span> <span class="nav-text">运动中的对象</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Backpressure（背压）"><span class="nav-number">1.3.</span> <span class="nav-text">Backpressure（背压）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Assembly-time"><span class="nav-number">1.4.</span> <span class="nav-text">Assembly time</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Subscription-time"><span class="nav-number">1.5.</span> <span class="nav-text">Subscription time</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Runtime"><span class="nav-number">1.6.</span> <span class="nav-text">Runtime</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#简单的后台计算"><span class="nav-number">1.7.</span> <span class="nav-text">简单的后台计算</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Schedulers（调度器）"><span class="nav-number">1.8.</span> <span class="nav-text">Schedulers（调度器）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#流中的并发"><span class="nav-number">1.9.</span> <span class="nav-text">流中的并发</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#并行处理"><span class="nav-number">1.10.</span> <span class="nav-text">并行处理</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#RXJava相关术语"><span class="nav-number">1.</span> <span class="nav-text">RXJava相关术语</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Upstream（上游）-DownStream（下游）"><span class="nav-number">1.1.</span> <span class="nav-text">Upstream（上游）,DownStream（下游）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#运动中的对象"><span class="nav-number">1.2.</span> <span class="nav-text">运动中的对象</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Backpressure（背压）"><span class="nav-number">1.3.</span> <span class="nav-text">Backpressure（背压）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Assembly-time"><span class="nav-number">1.4.</span> <span class="nav-text">Assembly time</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Subscription-time"><span class="nav-number">1.5.</span> <span class="nav-text">Subscription time</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Runtime"><span class="nav-number">1.6.</span> <span class="nav-text">Runtime</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#简单的后台计算"><span class="nav-number">1.7.</span> <span class="nav-text">简单的后台计算</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Schedulers（调度器）"><span class="nav-number">1.8.</span> <span class="nav-text">Schedulers（调度器）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#流中的并发"><span class="nav-number">1.9.</span> <span class="nav-text">流中的并发</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#并行处理"><span class="nav-number">1.10.</span> <span class="nav-text">并行处理</span></a></li></ol></li></ol></div>
       </section>
       <!--/noindex-->
 
       <section class="site-overview-wrap sidebar-panel">
-        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image" alt="Crazypudding"
       src="/images/avatar.jpg">
   <p class="site-author-name" itemprop="name">Crazypudding</p>
   <div class="site-description" itemprop="description">有道无术术尚可求，有术无道止于术</div>
 </div>
-<div class="site-state-wrap animated">
+<div class="site-state-wrap motion-element">
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
-          <a href="/archives/">
-        
+          <a href="/archives">
           <span class="site-state-item-count">12</span>
           <span class="site-state-item-name">日志</span>
         </a>
@@ -219,7 +203,7 @@
       </div>
   </nav>
 </div>
-  <div class="links-of-author animated">
+  <div class="links-of-author motion-element">
       <span class="links-of-author-item">
         <a href="https://github.com/crazypudding" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;crazypudding" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
       </span>
@@ -566,7 +550,8 @@
 
   
   <script src="/lib/anime.min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/medium-zoom@1/dist/medium-zoom.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
 
 <script src="/js/utils.js"></script>
 
