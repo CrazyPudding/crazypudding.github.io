@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <meta name="msapplication-config" content="/images/browserconfig.xml">
+  <meta name="google-site-verification" content="v4WrTLM4pCJ7GqyDZCubQai7qb5ypHbCQYSA7cabnJA">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Dancing Script:300,300italic,400,400italic,700,700italic|Source Code Pro:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  
+  <link rel="stylesheet" href="/lib/animate-css/animate.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"crazypudding.github.io","root":"/","scheme":"Gemini","version":"8.0.0-rc.4","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":true,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"disqus","storage":true,"lazyload":false,"nav":null,"activeClass":"disqus"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}}};
+  </script>
+
+  <meta name="description" content="RXJava相关术语Upstream（上游）,DownStream（下游）RXJava 中的数据流由数据源和 0 或多个连续的立即执行的操作或组合操作组成： 123source.operator1().operator2().operator3().subscribe(consumer);source.flatMap(value -&gt; source.operator1().operator2">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RXJava笔记——相关术语">
+<meta property="og:url" content="http://crazypudding.github.io/2018/03/27/rxjava-terminology/">
+<meta property="og:site_name" content="CrazyPudding&#39;s Note">
+<meta property="og:description" content="RXJava相关术语Upstream（上游）,DownStream（下游）RXJava 中的数据流由数据源和 0 或多个连续的立即执行的操作或组合操作组成： 123source.operator1().operator2().operator3().subscribe(consumer);source.flatMap(value -&gt; source.operator1().operator2">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-03-27T13:13:52.000Z">
+<meta property="article:modified_time" content="2018-04-10T14:53:11.865Z">
+<meta property="article:author" content="Crazypudding">
+<meta property="article:tag" content="Learning Notes">
+<meta property="article:tag" content="RXJava">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://crazypudding.github.io/2018/03/27/rxjava-terminology/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>RXJava笔记——相关术语 | CrazyPudding's Note</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-172930850-1"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'UA-172930850-1');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?3c0226d1e15c67d14d87c4d6771bfb82";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <main class="main">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+        <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+        <span class="toggle-line toggle-line-first"></span>
+        <span class="toggle-line toggle-line-middle"></span>
+        <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">CrazyPudding's Note</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#RXJava相关术语"><span class="nav-number">1.</span> <span class="nav-text">RXJava相关术语</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Upstream（上游）-DownStream（下游）"><span class="nav-number">1.1.</span> <span class="nav-text">Upstream（上游）,DownStream（下游）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#运动中的对象"><span class="nav-number">1.2.</span> <span class="nav-text">运动中的对象</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Backpressure（背压）"><span class="nav-number">1.3.</span> <span class="nav-text">Backpressure（背压）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Assembly-time"><span class="nav-number">1.4.</span> <span class="nav-text">Assembly time</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Subscription-time"><span class="nav-number">1.5.</span> <span class="nav-text">Subscription time</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Runtime"><span class="nav-number">1.6.</span> <span class="nav-text">Runtime</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#简单的后台计算"><span class="nav-number">1.7.</span> <span class="nav-text">简单的后台计算</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Schedulers（调度器）"><span class="nav-number">1.8.</span> <span class="nav-text">Schedulers（调度器）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#流中的并发"><span class="nav-number">1.9.</span> <span class="nav-text">流中的并发</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#并行处理"><span class="nav-number">1.10.</span> <span class="nav-text">并行处理</span></a></li></ol></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Crazypudding"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Crazypudding</p>
+  <div class="site-description" itemprop="description">有道无术术尚可求，有术无道止于术</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">12</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/crazypudding" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;crazypudding" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </header>
+
+      
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/crazypudding" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div id="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+      <div class="main-inner">
+        
+
+        <div class="content post posts-expand">
+          
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://crazypudding.github.io/2018/03/27/rxjava-terminology/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Crazypudding">
+      <meta itemprop="description" content="有道无术术尚可求，有术无道止于术">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CrazyPudding's Note">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          RXJava笔记——相关术语
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-03-27 21:13:52" itemprop="dateCreated datePublished" datetime="2018-03-27T21:13:52+08:00">2018-03-27</time>
+            </span>
+
+          
+            <span id="/2018/03/27/rxjava-terminology/" class="post-meta-item leancloud_visitors" data-flag-title="RXJava笔记——相关术语" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2018/03/27/rxjava-terminology/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/03/27/rxjava-terminology/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>1.9k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>2 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="RXJava相关术语"><a href="#RXJava相关术语" class="headerlink" title="RXJava相关术语"></a>RXJava相关术语</h2><h3 id="Upstream（上游）-DownStream（下游）"><a href="#Upstream（上游）-DownStream（下游）" class="headerlink" title="Upstream（上游）,DownStream（下游）"></a>Upstream（上游）,DownStream（下游）</h3><p>RXJava 中的数据流由数据源和 0 或多个连续的立即执行的操作或组合操作组成：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">source.operator1().operator2().operator3().subscribe(consumer);</span><br><span class="line"></span><br><span class="line">source.flatMap(value -&gt; source.operator1().operator2().operator3());</span><br></pre></td></tr></table></figure>
+<p>如上，如当前处于<code>operation2</code>，则左侧为upstream，右侧为downstream。</p>
+<h3 id="运动中的对象"><a href="#运动中的对象" class="headerlink" title="运动中的对象"></a>运动中的对象</h3><p>在 RXJava 中，emission, emits, item, event, signal, data 和 message 都表示沿着流传播的对象。</p>
+<h3 id="Backpressure（背压）"><a href="#Backpressure（背压）" class="headerlink" title="Backpressure（背压）"></a>Backpressure（背压）</h3><p>当数据流运行在多个线程中，数据流中每一个操作处理的速度可能会不同，如果上游处理速度比下游快，则会造成堵塞。通常表现为由与暂时缓存或需要跳过、抛弃部分数据而增加内存使用。这时可以使用背压策略解决，即当前操作可以告诉上游它可以处理多少事件，在无法预知上游会发送多少事件过来的情况下可以控制内存的使用。</p>
+<p>在 RXJava 中，<code>Flowable</code> 专为背压设计并且 <code>Observable</code> 专为无背压操作设计。</p>
+<a id="more"></a>
+
+<h3 id="Assembly-time"><a href="#Assembly-time" class="headerlink" title="Assembly time"></a>Assembly time</h3><p>通过各种操作符来准备数据流的时间，在 <code>subscribe()</code> 发生之前。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Flowable&lt;Integer&gt; flow &#x3D; Flowable.range(1, 5)</span><br><span class="line">.map(v -&gt; v* v)</span><br><span class="line">.filter(v -&gt; v % 3 &#x3D;&#x3D; 0)</span><br><span class="line">;</span><br></pre></td></tr></table></figure>
+<p>在这种状态下没有副作用发生。</p>
+<h3 id="Subscription-time"><a href="#Subscription-time" class="headerlink" title="Subscription time"></a>Subscription time</h3><p><code>subscribe()</code> 被调用时所处的状态，是一种临时状态，此时会内部建立有各种操作符组成的操作链。产生订阅副作用，在这种状态下部分数据源会立即阻断或开始发送事件。</p>
+<h3 id="Runtime"><a href="#Runtime" class="headerlink" title="Runtime"></a>Runtime</h3><p>流主动发送事件、错误或已完成信号时的状态。几乎是整个操作过程执行的时间。</p>
+<h3 id="简单的后台计算"><a href="#简单的后台计算" class="headerlink" title="简单的后台计算"></a>简单的后台计算</h3><p>RXJava 采用流式 API，类似构建器模式，不同的是 RXJava 返回的类型是不变的。通过 <code>subscribeOn</code> 将耗时操作转移到其他线程，当数据准备好时，通过 <code>observeOn</code> 转移到 UI 线程显示。</p>
+<h3 id="Schedulers（调度器）"><a href="#Schedulers（调度器）" class="headerlink" title="Schedulers（调度器）"></a>Schedulers（调度器）</h3><p>RXJava 使用 <code>Schedulers</code> (调度器)处理并发问题，RXJava 中，Schedulers 运行在守护线程中，意味着只要 <code>main</code> 方法存在，它们都将停止并且后台任务可能永远不会执行。</p>
+<ul>
+<li><code>Schedulers.computation()</code>：在后台固定数量的专用线程中处理密集型计算。大部分异步操作符的默认调度器。</li>
+<li><code>Schedulers.io()</code>：在一组动态变换的线程中运行类 I/O 或易阻塞的操作。</li>
+<li><code>Schedulers.single()</code>：以 FIFO 的方式在单一线程中运行操作</li>
+<li><code>Schedulers.trampoline()</code>：以 FIFO 的方式在当前线程中运行操，常用于测试</li>
+</ul>
+<p>以上四种调度器在所有 JVM 中都可用，某些特定平台也有自己的调度器，如 Android 的 <code>AndroidSchedulers.mainThread()</code>。</p>
+<h3 id="流中的并发"><a href="#流中的并发" class="headerlink" title="流中的并发"></a>流中的并发</h3><p>流的本质是顺序的，但是可分为不同的处理过程，而且相互之间可能存在并发</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Flowable.range(1, 10)</span><br><span class="line">  .observeOn(Schedulers.computation())</span><br><span class="line">  .map(v -&gt; v * v)</span><br><span class="line">  .blockingSubscribe(System.out::println);</span><br></pre></td></tr></table></figure>
+
+<p>以上示例中，在 computation scheduler 中从 1 到 10 计算其平方，在调用 blockingSubscribe 的线程中输出结果。其中 <code>map(v -&gt; v * v)</code> 并不是并行的，而是在同一个 computation 线程中顺序执行。</p>
+<h3 id="并行处理"><a href="#并行处理" class="headerlink" title="并行处理"></a>并行处理</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Flowable.range(1, 10)</span><br><span class="line">  .flatMap(v -&gt;</span><br><span class="line">      Flowable.just(v)</span><br><span class="line">        .subscribeOn(Schedulers.computation())</span><br><span class="line">        .map(w -&gt; w * w)</span><br><span class="line">  )</span><br><span class="line">  .blockingSubscribe(System.out::println);</span><br></pre></td></tr></table></figure>
+
+<p>RXJava 中的并行意味着在相互独立的流中执行操作并将结果合并到一个流中。操作符 <code>flatMap</code> 实现了并行，但是不能保证最终合并的结果是按顺序输出的，即内部流的顺序可能会相互交错。替代操作符：</p>
+<ul>
+<li><code>concatMap</code>：一次运行一个内部流</li>
+<li><code>concatMapEager</code>：立即运行所有内部流，按照内部流创建的顺序输出</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Learning-Notes/" rel="tag"># Learning Notes</a>
+              <a href="/tags/RXJava/" rel="tag"># RXJava</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2017/07/16/constraintlayout/" rel="prev" title="ConstraintLayout学习小结">
+      <i class="fa fa-chevron-left"></i> ConstraintLayout学习小结
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/04/03/rxjava-oparetion-create/" rel="next" title="RXJava操作符——创建类">
+      RXJava操作符——创建类 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+        </div>
+        
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="http://www.beian.miit.gov.cn/" rel="noopener" target="_blank">赣ICP备16009806号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Crazypudding</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">69k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">1:03</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              leancloudSelector(url).innerText = 'Counter not initialized! More info at console err msg.';
+              console.error('ATTENTION! LeanCloud counter has security bug, see how to solve it here: https://github.com/theme-next/hexo-leancloud-counter-security. \n However, you can still use LeanCloud without security, by setting `security` option to `false`.');
+            
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"d6IWzX7FjgQks0Y7UioDD24l-gzGzoHsz","app_key":"GMrkaVwqnkjwRbJGmzs42wHK","server_url":null,"security":true};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/medium-zoom@1/dist/medium-zoom.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://crazypudding.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  var disqus_config = function() {
+    this.page.url = "http://crazypudding.github.io/2018/03/27/rxjava-terminology/";
+    this.page.identifier = "2018/03/27/rxjava-terminology/";
+    this.page.title = "RXJava笔记——相关术语";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://crazypudding.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>

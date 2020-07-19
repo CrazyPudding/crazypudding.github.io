@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <meta name="msapplication-config" content="/images/browserconfig.xml">
+  <meta name="google-site-verification" content="v4WrTLM4pCJ7GqyDZCubQai7qb5ypHbCQYSA7cabnJA">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Dancing Script:300,300italic,400,400italic,700,700italic|Source Code Pro:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  
+  <link rel="stylesheet" href="/lib/animate-css/animate.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"crazypudding.github.io","root":"/","scheme":"Gemini","version":"8.0.0-rc.4","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":true,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"disqus","storage":true,"lazyload":false,"nav":null,"activeClass":"disqus"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}}};
+  </script>
+
+  <meta name="description" content="概览ConstraintLayout是16年随着Android Studio2.2一起发布的一款布局组件，支持Android2.3及以上的版本，而且从AS2.3开始，新建layout的默认根布局就是ConstraintLayout。ConstraintLayout跟RelativeLayout有点类似，组件的位置根据各兄弟组件及组件与父级之间的相对位置来确定，但是它要比RelativeLayout">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ConstraintLayout学习小结">
+<meta property="og:url" content="http://crazypudding.github.io/2017/07/16/constraintlayout/">
+<meta property="og:site_name" content="CrazyPudding&#39;s Note">
+<meta property="og:description" content="概览ConstraintLayout是16年随着Android Studio2.2一起发布的一款布局组件，支持Android2.3及以上的版本，而且从AS2.3开始，新建layout的默认根布局就是ConstraintLayout。ConstraintLayout跟RelativeLayout有点类似，组件的位置根据各兄弟组件及组件与父级之间的相对位置来确定，但是它要比RelativeLayout">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://img.crazypudding.com/ConstraintLayoutLearn/constraints.png">
+<meta property="og:image" content="http://img.crazypudding.com/ConstraintLayoutLearn/anchors.png">
+<meta property="og:image" content="http://img.crazypudding.com/ConstraintLayoutLearn/base_line_anchor.png">
+<meta property="og:image" content="http://img.crazypudding.com/ConstraintLayoutLearn/base_line.png">
+<meta property="og:image" content="http://img.crazypudding.com/ConstraintLayoutLearn/toolbar.png">
+<meta property="og:image" content="http://img.crazypudding.com/ConstraintLayoutLearn/show-constraints.png">
+<meta property="og:image" content="http://img.crazypudding.com/ConstraintLayoutLearn/autoconnect.png">
+<meta property="og:image" content="http://img.crazypudding.com/ConstraintLayoutLearn/auto-connect.gif">
+<meta property="og:image" content="http://img.crazypudding.com/ConstraintLayoutLearn/clear-all-connects.png">
+<meta property="og:image" content="http://img.crazypudding.com/ConstraintLayoutLearn/infer-constraints.png">
+<meta property="og:image" content="http://img.crazypudding.com/ConstraintLayoutLearn/default_margins.png">
+<meta property="og:image" content="http://img.crazypudding.com/ConstraintLayoutLearn/convert-toConstraintLayout.gif">
+<meta property="og:image" content="http://img.crazypudding.com/ConstraintLayoutLearn/create-constraint.gif">
+<meta property="og:image" content="http://img.crazypudding.com/ConstraintLayoutLearn/layout-editor-action-clear.png">
+<meta property="og:image" content="http://img.crazypudding.com/ConstraintLayoutLearn/position-constraint_2x.png">
+<meta property="og:image" content="http://img.crazypudding.com/ConstraintLayoutLearn/inspector.png">
+<meta property="og:image" content="http://img.crazypudding.com/ConstraintLayoutLearn/delete-constraint.png">
+<meta property="og:image" content="http://img.crazypudding.com/ConstraintLayoutLearn/height_width_mode.gif">
+<meta property="og:image" content="http://img.crazypudding.com/ConstraintLayoutLearn/wrap_content.png">
+<meta property="og:image" content="http://img.crazypudding.com/ConstraintLayoutLearn/match_constraint.png">
+<meta property="og:image" content="http://img.crazypudding.com/ConstraintLayoutLearn/fixed.png">
+<meta property="og:image" content="http://img.crazypudding.com/ConstraintLayoutLearn/set_ratio.png">
+<meta property="og:image" content="http://img.crazypudding.com/ConstraintLayoutLearn/adjust_bias.gif">
+<meta property="og:image" content="http://img.crazypudding.com/ConstraintLayoutLearn/chains.png">
+<meta property="og:image" content="http://img.crazypudding.com/ConstraintLayoutLearn/create_chain.gif">
+<meta property="og:image" content="http://img.crazypudding.com/ConstraintLayoutLearn/set_chains_mode.png">
+<meta property="og:image" content="http://img.crazypudding.com/ConstraintLayoutLearn/set_chains_mode.png">
+<meta property="og:image" content="http://img.crazypudding.com/ConstraintLayoutLearn/spread_chain.png">
+<meta property="og:image" content="http://img.crazypudding.com/ConstraintLayoutLearn/weighted_chain.png">
+<meta property="og:image" content="http://img.crazypudding.com/ConstraintLayoutLearn/spread_inside_chain.png">
+<meta property="og:image" content="http://img.crazypudding.com/ConstraintLayoutLearn/packed_chain.png">
+<meta property="og:image" content="http://img.crazypudding.com/ConstraintLayoutLearn/packed_chain_with_bias.png">
+<meta property="og:image" content="http://img.crazypudding.com/ConstraintLayoutLearn/guide_line.png">
+<meta property="og:image" content="http://img.crazypudding.com/ConstraintLayoutLearn/guideLine.gif">
+<meta property="og:image" content="http://img.crazypudding.com/ConstraintLayoutLearn/guideLineDemo.png">
+<meta property="article:published_time" content="2017-07-16T07:00:00.000Z">
+<meta property="article:modified_time" content="2019-04-13T14:37:53.621Z">
+<meta property="article:author" content="Crazypudding">
+<meta property="article:tag" content="Android">
+<meta property="article:tag" content="Learning Notes">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://img.crazypudding.com/ConstraintLayoutLearn/constraints.png">
+
+<link rel="canonical" href="http://crazypudding.github.io/2017/07/16/constraintlayout/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>ConstraintLayout学习小结 | CrazyPudding's Note</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-172930850-1"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'UA-172930850-1');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?3c0226d1e15c67d14d87c4d6771bfb82";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <main class="main">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+        <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+        <span class="toggle-line toggle-line-first"></span>
+        <span class="toggle-line toggle-line-middle"></span>
+        <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">CrazyPudding's Note</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#概览"><span class="nav-number">1.</span> <span class="nav-text">概览</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#相关概念"><span class="nav-number">2.</span> <span class="nav-text">相关概念</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#a-约束（Constraint）"><span class="nav-number">2.1.</span> <span class="nav-text">a.约束（Constraint）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#b-锚点"><span class="nav-number">2.2.</span> <span class="nav-text">b.锚点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#c-新增功能按钮"><span class="nav-number">2.3.</span> <span class="nav-text">c.新增功能按钮</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实际操作"><span class="nav-number">3.</span> <span class="nav-text">实际操作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-在项目中加入ConstraintLayout"><span class="nav-number">3.1.</span> <span class="nav-text">1.在项目中加入ConstraintLayout</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-声明中央库maven-google-com"><span class="nav-number">3.1.1.</span> <span class="nav-text">1.1.声明中央库maven.google.com</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-添加依赖"><span class="nav-number">3.1.2.</span> <span class="nav-text">1.2.添加依赖</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-添加约束"><span class="nav-number">3.2.</span> <span class="nav-text">2.添加约束</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-Inspector面板"><span class="nav-number">3.3.</span> <span class="nav-text">3.Inspector面板</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-Chains-约束链"><span class="nav-number">3.4.</span> <span class="nav-text">4.Chains(约束链)</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#4-1-创建约束链"><span class="nav-number">3.4.1.</span> <span class="nav-text">4.1.创建约束链</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-约束链的三种模式"><span class="nav-number">3.5.</span> <span class="nav-text">4.2.约束链的三种模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-GuideLine"><span class="nav-number">3.6.</span> <span class="nav-text">5.GuideLine</span></a></li></ol></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Crazypudding"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Crazypudding</p>
+  <div class="site-description" itemprop="description">有道无术术尚可求，有术无道止于术</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">12</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/crazypudding" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;crazypudding" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </header>
+
+      
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/crazypudding" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div id="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+      <div class="main-inner">
+        
+
+        <div class="content post posts-expand">
+          
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://crazypudding.github.io/2017/07/16/constraintlayout/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Crazypudding">
+      <meta itemprop="description" content="有道无术术尚可求，有术无道止于术">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CrazyPudding's Note">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          ConstraintLayout学习小结
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-07-16 15:00:00" itemprop="dateCreated datePublished" datetime="2017-07-16T15:00:00+08:00">2017-07-16</time>
+            </span>
+
+          
+            <span id="/2017/07/16/constraintlayout/" class="post-meta-item leancloud_visitors" data-flag-title="ConstraintLayout学习小结" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2017/07/16/constraintlayout/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2017/07/16/constraintlayout/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.9k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="概览"><a href="#概览" class="headerlink" title="概览"></a>概览</h2><p>ConstraintLayout是16年随着Android Studio2.2一起发布的一款布局组件，支持Android2.3及以上的版本，而且从AS2.3开始，新建layout的默认根布局就是ConstraintLayout。ConstraintLayout跟RelativeLayout有点类似，组件的位置根据各兄弟组件及组件与父级之间的相对位置来确定，但是它要比RelativeLayout强大很多，它的出现，应该说是解决了以往开发中过多的布局嵌套带来的卡顿、程序性能不够等问题。与传统的利用XML编辑器编写页面UI不同，AS2.2中的可视化布局编辑器专门针对ConstraintLayout进行了改善，在ConstraintLayout中使用布局编辑器进行控件的拖拽操作和属性调整，比编写XML代码更为简单快速，嗯。。。有点照着UI图绘制高保真原型的味道。</p>
+<a id="more"></a>
+
+<h2 id="相关概念"><a href="#相关概念" class="headerlink" title="相关概念"></a>相关概念</h2><p>上面说到ConstraintLayout主要是在布局编辑器中操作，优化之后，布局编辑器新增了一些功能按钮，这些基本的概念也是依附于布局编辑器解释的。布局编辑器的相关文档:<a href="https://developer.android.com/studio/write/layout-editor.html" target="_blank" rel="noopener">Build a UI with Layout Editor</a></p>
+<h3 id="a-约束（Constraint）"><a href="#a-约束（Constraint）" class="headerlink" title="a.约束（Constraint）"></a>a.约束（Constraint）</h3><p>ConstraintLayout，也就是约束布局，顾名思义，像RelativeLayout一样，肯定是在各个View之间有一定的依赖约束关系的，这种关系就称为Constraint。在布局编辑器的蓝图模式(Blueprint)中表现形式是一条细线，如下图中的两条带箭头的细线就是TextView所具有的两个约束（在ConstraintLayout中，每一个View对象至少需要两个约束），蓝图模式会显示选中的View所具有的约束，箭头指向被依赖的View：</p>
+<p><img src="http://img.crazypudding.com/ConstraintLayoutLearn/constraints.png" alt="constraint"></p>
+<h3 id="b-锚点"><a href="#b-锚点" class="headerlink" title="b.锚点"></a>b.锚点</h3><p>在蓝图模式种选中一个View对象，这个View对象就处于激活状态，可以进行属性设置了，跟以往不同的是，激活状态中的View对象会出现八个锚点，如下图，View对象的每一条边中间有一个空心圆型的约束控制锚点，四个角分别有一个方形的大小控制锚点。约束控制锚点就是用来生成View对象之间的约束的，大小控制锚点不用说也知道可以调节View对象的大小了。</p>
+<p><img src="http://img.crazypudding.com/ConstraintLayoutLearn/anchors.png" alt="anchors"></p>
+<p>除此之外，每一个有文字的View（比如TextView或者Button这类的）都会有一个基线锚点，这个是根据文字的基线来对齐View的，如果设置了基线锚点之间的约束，那么这个View的上下两个约束锚点将失效且不能被设置。基线锚点默认是没有启用的，要启用基线锚点，在带文字的View下方点击按钮<img src="http://img.crazypudding.com/ConstraintLayoutLearn/base_line_anchor.png" alt="base-line-anchor">就会在View中间出现一条横线:</p>
+<p><img src="http://img.crazypudding.com/ConstraintLayoutLearn/base_line.png" alt="baseline"></p>
+<h3 id="c-新增功能按钮"><a href="#c-新增功能按钮" class="headerlink" title="c.新增功能按钮"></a>c.新增功能按钮</h3><p>在AS2.3之后，布局编辑器的工具栏中多了这样一排按钮:<img src="http://img.crazypudding.com/ConstraintLayoutLearn/toolbar.png" alt="toolbar">，这些按钮就是针对ConstraintLayout设计的。分别代表的功能是：</p>
+<p><img src="http://img.crazypudding.com/ConstraintLayoutLearn/show-constraints.png" alt="show-constraints">表示是否显示约束，当眼睛打开的时候（鼠标放到上面会显示 <strong>Hide Constraints</strong> ），这说明只要选中了ContraintLayout这个根布局，其中所有View对象的约束都会显示出来，否则只有在选中某个View的时候才会显示这个View的约束。(图中为关闭状态)<br><img src="http://img.crazypudding.com/ConstraintLayoutLearn/autoconnect.png" alt="Autoconnect">表示是否打开自动设置约束，不过这个设置只针对父布局也就是所在的ConstraintLayout有效。就是说，当这个功能打开时（鼠标放上去显示 <strong>Turn off Autoconnect</strong>）,如果把一个View对象拖入布局的时候，如果靠近父布局边缘会出现参考线（参考线据边缘距离根据最后一个默认间距属性而定），此时放开View会自动添加与父布局的约束，当然只有出现了参考线的那一边会自动约束。如果靠近父布局中其他View对象的话则不会自动约束。（图中为关闭状态，为了看起来不那么费劲，下面附上一张动图看下这个功能的效果，开始处于打开状态，点击这个按钮之后关闭）</p>
+<p><img src="http://img.crazypudding.com/ConstraintLayoutLearn/auto-connect.gif" alt="auto-connect-gif"></p>
+<p><img src="http://img.crazypudding.com/ConstraintLayoutLearn/clear-all-connects.png" alt="clear-all-connects">这个就很简单了，如果点击这个按钮，当前ConstraintLayout中View对象的约束都会被清除<br><img src="http://img.crazypudding.com/ConstraintLayoutLearn/infer-constraints.png" alt="infer-constraints">这个按钮跟自动设置约束意思差不多，当你把一个View对象拖入ConstraintLayout，随便放一个位置，再点击这个按钮，会根据View当前所在的位置生成与父布局上边和左边的约束，有点绝对坐标的意思<br><img src="http://img.crazypudding.com/ConstraintLayoutLearn/default_margins.png" alt="default-margins">这个数字就是设置的默认间距了，新增一个约束的时候，两个View之间的间距就根据这个数字而定，点击可以改变它的值</p>
+<h2 id="实际操作"><a href="#实际操作" class="headerlink" title="实际操作"></a>实际操作</h2><h3 id="1-在项目中加入ConstraintLayout"><a href="#1-在项目中加入ConstraintLayout" class="headerlink" title="1.在项目中加入ConstraintLayout"></a>1.在项目中加入ConstraintLayout</h3><p>首先新建一个项目，然后在build.gradle(Module:app)这个文件中添加中央库声明和空间依赖，当然这要确保AS版本在2.2及以上，从AS2.3开始新建的项目默认就包含了ConstraintLayout库的依赖，而且新建的layout.xml文件都是以ConstraintLayout为根布局的。RelativeLayout和LinearLayout也可以用AS自动转变为ConstraintLayout。</p>
+<h4 id="1-1-声明中央库maven-google-com"><a href="#1-1-声明中央库maven-google-com" class="headerlink" title="1.1.声明中央库maven.google.com"></a>1.1.声明中央库maven.google.com</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">repositories &#123;</span><br><span class="line">    maven &#123;</span><br><span class="line">        url &#39;https:&#x2F;&#x2F;maven.google.com&#39;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="1-2-添加依赖"><a href="#1-2-添加依赖" class="headerlink" title="1.2.添加依赖"></a>1.2.添加依赖</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">dependencies &#123;</span><br><span class="line">    compile &#39;com.android.support.constraint:constraint-layout:1.0.2&#39;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>做完以上两步之要在 <strong>Sync</strong> 一下项目就顺利的把ConstraintLayout添加到项目中了。如果需要转换根布局的话，可以在可视化编辑器中 <strong>ComponentTree</strong> 这个面板右键相应的布局选择 <strong>Convert layout to ConstraintLayout</strong> 就能将选中的布局自动的转换成ConstraintLayout了。如下图：</p>
+<p><img src="http://img.crazypudding.com/ConstraintLayoutLearn/convert-toConstraintLayout.gif" alt="convert-to-ConsTraintLayout"></p>
+<p>可以看到，之前的控件都自动转换到ConstraintLayout中了。如果当中有嵌套布局的话，会去除没有在Java中引用的View Group，将所有控件都放在ConstraintLayout中，由于AS是根据当前屏幕来转换的，所以在自动转换之后还需要微调以保证控件能够适配其他场景或者去掉引用的View Group。</p>
+<h3 id="2-添加约束"><a href="#2-添加约束" class="headerlink" title="2.添加约束"></a>2.添加约束</h3><p>给View添加约束的操作很简单，选中一个View A，拖住一个约束控制锚点到另一个View B或者父布局边缘，那么View A与View B或者父布局边缘形成一个默认间距的距离，而且是View A往View B或者父布局边缘的方向靠近，如下图：</p>
+<p><img src="http://img.crazypudding.com/ConstraintLayoutLearn/create-constraint.gif" alt="create-constraint"></p>
+<p>可以看到如果给Button添加了左边相对于父布局左边的约束，再为右边添加约束的话，之前左边是约束的直线和右边新增的约束都会变成弹簧状，出现这种情况是因为Button的大小固定或者设置为“wrap_content”，说明Button现在是相对于两个约束点居中的状态。</p>
+<p>如果要取消这个约束的话，可以点击约束的起点，也就是图中Button的左边约束锚点或右边约束锚点，这样就能取消Button左边或者右边的约束，或者直接使用Button下方的按钮<img src="http://img.crazypudding.com/ConstraintLayoutLearn/layout-editor-action-clear.png" alt="layout-editor-action-clear">清除Button所有的约束，当然也能使用工具栏中的清除按钮清除布局中所有View的约束。</p>
+<p>添加约束需要注意以下几点：</p>
+<ul>
+<li>在ConstraintLayout中，每个View至少要有两个约束，而且要水平和垂直方向各一个，最多当然可以有四个</li>
+<li>水平方向的约束锚点只能与水平方向的约束锚点或父布局上下形成约束，垂直方向的约束锚点只能与垂直方向或父布局左右形成约束，基线锚点只能与基线锚点之间形成约束</li>
+<li>大概理解为，每一个约束锚点只能作为一个约束的起点，但是可以作为多个约束的终点。也就是说特定的一个约束锚点只能对外形成唯一的一个约束，但是可以有多个其他View的约束锚点连接到它。</li>
+</ul>
+<p>当然了，一个约束只能锁定这个锚点所在的方向上的相对位置，例如下图中B被约束到A的右边，C被约束到A的下边，所以B可以上下移动或增加其他约束，C也可以左右移动或增加其他约束。</p>
+<p><img src="http://img.crazypudding.com/ConstraintLayoutLearn/position-constraint_2x.png" alt="position-constraint"></p>
+<h3 id="3-Inspector面板"><a href="#3-Inspector面板" class="headerlink" title="3.Inspector面板"></a>3.Inspector面板</h3><p>如果想要改变View的大小或者位置的时候，可以直接在蓝图模式中拖动View对象或者使用大小控制锚点完成，但是通过锚点改变的都是固定大小，并不是很实用，所以新版的布局编辑器中除了新增工具栏的功能按钮，在Properties面板的顶部还增加了一个Inspector面板，这个面板只在ConstraintLayout中有效，它长下面这个样子：</p>
+<p><img src="http://img.crazypudding.com/ConstraintLayoutLearn/inspector.png" alt="inspector"></p>
+<p>首先看1处标出的圆点，这个圆点表示在ConstraintLayout中View相应的边设置了约束，如果点击这个圆点，那么这个约束就被清除了，和蓝图模式中View的约束锚点一样。如果没有设置约束，就不会出现圆点，所以图中对应的View的约束表现应该是这样的：</p>
+<p><img src="http://img.crazypudding.com/ConstraintLayoutLearn/delete-constraint.png" alt="delete_constraint"></p>
+<p>可以看到，4标出了一个数字，这个数字就是默认的间距，可以直接点击修改相应的间距大小。3标出的是一个弹簧状的图案，这个地方会显示出当前View的宽高模式，就像普通布局中的“wrap_content”、“match_parent”等等，可以通过点击这个区域实现改变，如下图操作：</p>
+<p><img src="http://img.crazypudding.com/ConstraintLayoutLearn/height_width_mode.gif" alt="height_width_mode"></p>
+<p>这个区域共有三种表现形式：</p>
+<ul>
+<li><img src="http://img.crazypudding.com/ConstraintLayoutLearn/wrap_content.png" alt="wrap_content"><strong>wrap_content:</strong>和普通布局中的wrap_content同意，View的大小随内容自适应</li>
+<li><img src="http://img.crazypudding.com/ConstraintLayoutLearn/match_constraint.png" alt="match_constraint"><strong>match_constraint:</strong>这个有点match_parent的味道，但不同的是，只有同一方向上两条边都有约束才会将View的宽或高扩张到match_parent的大小，否则还是会随View中的内容自适应大小。需要注意的是在这种形态下，View的宽或高大小显示为 <strong>0dp</strong>（注意：没有match_constraint这个属性），而且在ConstraintLayout中应该使用match_constraint来替代match_parent。如果View的宽或高只要有一边处于这种形态，就能看到2处标出的三角形，这个三角形按钮称为Ratio，可设置View的宽高比</li>
+<li><img src="http://img.crazypudding.com/ConstraintLayoutLearn/fixed.png" alt="fixed"><strong>fixed:</strong>这个很明显了，就是设置固定大小的</li>
+</ul>
+<p>现在说说2处标出的Ratio的用法，点击Ratio按钮，会在Inspector右下角出现一个设置项</p>
+<p><img src="http://img.crazypudding.com/ConstraintLayoutLearn/set_ratio.png" alt="set_ratio"></p>
+<p>可以在右下角的框中设置比例，这个比例的形式是 <strong><em>width:height</em></strong> ，图中有一个蓝色的“工”字形，那么“工”字的那一竖就表示可以伸缩的，View的大小会以两横为基准，按比例伸缩那一竖的大小，如果两边都是match_constraint的话，可以点击Ratio按钮改变基准，或者说将“工”字形旋转90°，在XML代码中表现形式如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;TextView</span><br><span class="line">    ...</span><br><span class="line">    app:layout_constraintDimensionRatio&#x3D;&quot;h,16:9&quot;&#x2F;&gt;</span><br></pre></td></tr></table></figure>
+
+<p>可以将值中的 <strong>h</strong>改为 <strong>w</strong>，h表示高度可伸缩，w表示宽度可伸缩。</p>
+<p>最后再看一下5标出了一个带圆圈的值，这个值成为 <strong>Constraint Bias</strong>（约束偏差），以百分比的形式展示View更靠近哪一边，偏差值默认为50%，如果想改变这个值，拖动这个数值就可以了，如下图操作：</p>
+<p><img src="http://img.crazypudding.com/ConstraintLayoutLearn/adjust_bias.gif" alt="adjust_bias"></p>
+<h3 id="4-Chains-约束链"><a href="#4-Chains-约束链" class="headerlink" title="4.Chains(约束链)"></a>4.Chains(约束链)</h3><p>如果多个组件在单一轴向(水平或垂直方向)两两相互之间形成双向约束，那么这几个组件就可以成为Chain。如下图，如果A的右约束锚点与B的左约束锚点之间相互生成约束，那A和B就是一个约束链了。两个轴向的约束链是相互独立的，所以A和B都可以在纵向随意移动。另外，约束链中第一个元素成为链头(Chain Head)。</p>
+<p><img src="http://img.crazypudding.com/ConstraintLayoutLearn/chains.png" alt="chains"></p>
+<h4 id="4-1-创建约束链"><a href="#4-1-创建约束链" class="headerlink" title="4.1.创建约束链"></a>4.1.创建约束链</h4><p>创建约束链的方法非常简单，选中所有想要组成链的View，右击选择生成水平或垂直方向的约束链就可以了，如下图：</p>
+<p><img src="http://img.crazypudding.com/ConstraintLayoutLearn/create_chain.gif" alt="create_chain"></p>
+<p>生成约束链的两个元素中间出现了一条链，而且下方都出现了一个新的按钮<img src="http://img.crazypudding.com/ConstraintLayoutLearn/set_chains_mode.png" alt="set_chains_mode">，这个按钮可以使约束链在三种模式种转换，这三种模式下面会说到。</p>
+<blockquote>
+<p>嗯。。测试了一下，只有这些View在近似于一条轴上时能成功生成这个轴向的约束链。</p>
+</blockquote>
+<h3 id="4-2-约束链的三种模式"><a href="#4-2-约束链的三种模式" class="headerlink" title="4.2.约束链的三种模式"></a>4.2.约束链的三种模式</h3><p>现在我们知道，约束链可以通过按钮<img src="http://img.crazypudding.com/ConstraintLayoutLearn/set_chains_mode.png" alt="set_chains_mode">切换三种不同的模式，这三种模式转换到XML代码中就体现在链头的设置上了。在ConstraintLayout中，View对象有两个属性layout_constraintHorizontal_chainStyle和layout_constraintVertical_chainStyle。当我们为链头设置这两个属性中的一个时，就相当于设置这条约束链的模式了，当然这个属性的值有三种可能。</p>
+<ul>
+<li><strong><em>spread:</em></strong>设置约束链为Spread模式。该模式下，约束链中的所有元素在相应的轴向被等距分开，如果A、B、C三个元素组成的约束链设置为Spread模式，表现如下图</li>
+</ul>
+<p><img src="http://img.crazypudding.com/ConstraintLayoutLearn/spread_chain.png" alt="spread_chain"></p>
+<p>当该模式下有元素的设置了Match Constraint，那么这几个元素默认会平分剩余的空间，当然也有一个layout_constraintHorizontal_weight或layout_constraintVertical_weight控制其View对剩余空间的占比。例如B、C设置宽度为 <strong>0dp</strong>，A为 <strong>wrap_content</strong>，layout_constraintHorizontal_weight属性都默认，则表现如下</p>
+<p><img src="http://img.crazypudding.com/ConstraintLayoutLearn/weighted_chain.png" alt="weight_chain"></p>
+<ul>
+<li><strong><em>spread_insdie:</em></strong>设置约束链尾Spread Inside模式。这种模式与Spread模式唯一的不同是两端的元素与ConstraintLayout边缘的距离为0，如下图所示</li>
+</ul>
+<p><img src="http://img.crazypudding.com/ConstraintLayoutLearn/spread_inside_chain.png" alt="spread_inside_chain"></p>
+<ul>
+<li><strong><em>packed:</em></strong>设置约束链为Packed模式。这种模式将所有的元素捆绑到一起，左右两段默认平分剩余的距离，类似于合并并居中的概念。当然左右两段的距离是受链头的Bias控制的。默认情况下Packed模式下的约束链表现如下</li>
+</ul>
+<p><img src="http://img.crazypudding.com/ConstraintLayoutLearn/packed_chain.png" alt="packed_chain"></p>
+<p>如果改变链头也就是A的Bias为&lt;50%，则元素整体靠左偏移，如下图</p>
+<p><img src="http://img.crazypudding.com/ConstraintLayoutLearn/packed_chain_with_bias.png" alt="packed_chain_with_bias"></p>
+<h3 id="5-GuideLine"><a href="#5-GuideLine" class="headerlink" title="5.GuideLine"></a>5.GuideLine</h3><p>为了方便绘制UI，ConstraintLayout还引入了一个辅助的参考线GuideLine。布局中所有的View都可以与GuideLine生成约束，但是在运行时GuideLine是不可见的。GuideLine在工具栏新增按钮的旁边可以找到<img src="http://img.crazypudding.com/ConstraintLayoutLearn/guide_line.png" alt="guideLine">，从下拉菜单中可以选择建立纵向或横向的GuideLine，当然也可以右键选择新建相应的Guide，而且可以设置GuideLine的偏移，例如用GuideLine作为辅助时可以这样做</p>
+<p><img src="http://img.crazypudding.com/ConstraintLayoutLearn/guideLine.gif" alt="guide_line"></p>
+<p>实际运行时效果是这样的</p>
+<p><img src="http://img.crazypudding.com/ConstraintLayoutLearn/guideLineDemo.png" alt="guide_line_demo"></p>
+<p>好了，这些就是ConstraintLayout相关的一些学习笔记了，实际当中还是需要灵活运用来创造更优雅的绘制UI。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Android/" rel="tag"># Android</a>
+              <a href="/tags/Learning-Notes/" rel="tag"># Learning Notes</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2017/01/05/Learn-tp-use-greenDAO/" rel="prev" title="Android ORM框架学习-greenDAO的基本使用">
+      <i class="fa fa-chevron-left"></i> Android ORM框架学习-greenDAO的基本使用
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/03/27/rxjava-terminology/" rel="next" title="RXJava笔记——相关术语">
+      RXJava笔记——相关术语 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+        </div>
+        
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="http://www.beian.miit.gov.cn/" rel="noopener" target="_blank">赣ICP备16009806号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Crazypudding</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">69k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">1:03</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              leancloudSelector(url).innerText = 'Counter not initialized! More info at console err msg.';
+              console.error('ATTENTION! LeanCloud counter has security bug, see how to solve it here: https://github.com/theme-next/hexo-leancloud-counter-security. \n However, you can still use LeanCloud without security, by setting `security` option to `false`.');
+            
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"d6IWzX7FjgQks0Y7UioDD24l-gzGzoHsz","app_key":"GMrkaVwqnkjwRbJGmzs42wHK","server_url":null,"security":true};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/medium-zoom@1/dist/medium-zoom.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://crazypudding.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  var disqus_config = function() {
+    this.page.url = "http://crazypudding.github.io/2017/07/16/constraintlayout/";
+    this.page.identifier = "2017/07/16/constraintlayout/";
+    this.page.title = "ConstraintLayout学习小结";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://crazypudding.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>

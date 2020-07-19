@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <meta name="msapplication-config" content="/images/browserconfig.xml">
+  <meta name="google-site-verification" content="v4WrTLM4pCJ7GqyDZCubQai7qb5ypHbCQYSA7cabnJA">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Dancing Script:300,300italic,400,400italic,700,700italic|Source Code Pro:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  
+  <link rel="stylesheet" href="/lib/animate-css/animate.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"crazypudding.github.io","root":"/","scheme":"Gemini","version":"8.0.0-rc.4","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":true,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"disqus","storage":true,"lazyload":false,"nav":null,"activeClass":"disqus"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}}};
+  </script>
+
+  <meta name="description" content="Remote Config是什么？远程配置(Remote Config)是Firebase的功能之一。开发者可以通过在云端配置键值对来更改APP的一些属性，例如行为和外观。这样的功能也可以通过产品迭代更新来进行变换，但是产品的迭代是一个漫长的过程，少说也要几天。RemoteConfig可以快速实现这一过程，首先在本地设置一个参数名A和一个参数值a，当该参数的值需要改变时，在云端赋予参数名A一个新">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Firebase笔记(二)-Remote Config的简单使用">
+<meta property="og:url" content="http://crazypudding.github.io/2016/10/11/Study-on-RemoteConfig-Basics/">
+<meta property="og:site_name" content="CrazyPudding&#39;s Note">
+<meta property="og:description" content="Remote Config是什么？远程配置(Remote Config)是Firebase的功能之一。开发者可以通过在云端配置键值对来更改APP的一些属性，例如行为和外观。这样的功能也可以通过产品迭代更新来进行变换，但是产品的迭代是一个漫长的过程，少说也要几天。RemoteConfig可以快速实现这一过程，首先在本地设置一个参数名A和一个参数值a，当该参数的值需要改变时，在云端赋予参数名A一个新">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://img.crazypudding.com/firebaseRemoteConfig/RemoteConfig.png">
+<meta property="og:image" content="http://img.crazypudding.com/firebaseRemoteConfig/api_use.png">
+<meta property="og:image" content="http://img.crazypudding.com/firebase/default-value.png">
+<meta property="og:image" content="http://img.crazypudding.com/remote-parameter.png">
+<meta property="og:image" content="http://img.crazypudding.com/firebase/fetch_succeed.png">
+<meta property="og:image" content="http://img.crazypudding.com/firebaseRemoteConfig/create-conditions.png">
+<meta property="og:image" content="http://img.crazypudding.com/firebaseRemoteConfig/china.png">
+<meta property="og:image" content="http://img.crazypudding.com/firebaseRemoteConfig/conditions.png">
+<meta property="og:image" content="http://img.crazypudding.com/firebaseRemoteConfig/change-conditions.png">
+<meta property="article:published_time" content="2016-10-11T12:21:59.000Z">
+<meta property="article:modified_time" content="2019-04-13T14:39:07.682Z">
+<meta property="article:author" content="Crazypudding">
+<meta property="article:tag" content="Android">
+<meta property="article:tag" content="Learning Notes">
+<meta property="article:tag" content="Firebase">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://img.crazypudding.com/firebaseRemoteConfig/RemoteConfig.png">
+
+<link rel="canonical" href="http://crazypudding.github.io/2016/10/11/Study-on-RemoteConfig-Basics/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Firebase笔记(二)-Remote Config的简单使用 | CrazyPudding's Note</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-172930850-1"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'UA-172930850-1');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?3c0226d1e15c67d14d87c4d6771bfb82";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <main class="main">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+        <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+        <span class="toggle-line toggle-line-first"></span>
+        <span class="toggle-line toggle-line-middle"></span>
+        <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">CrazyPudding's Note</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Remote-Config是什么？"><span class="nav-number">1.</span> <span class="nav-text">Remote Config是什么？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Remote-Config使用条件"><span class="nav-number">2.</span> <span class="nav-text">Remote Config使用条件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Remote-Config的简单使用"><span class="nav-number">3.</span> <span class="nav-text">Remote Config的简单使用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RemoteConfig的条件控制"><span class="nav-number">4.</span> <span class="nav-text">RemoteConfig的条件控制</span></a></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Crazypudding"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Crazypudding</p>
+  <div class="site-description" itemprop="description">有道无术术尚可求，有术无道止于术</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">12</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/crazypudding" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;crazypudding" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </header>
+
+      
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/crazypudding" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div id="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+      <div class="main-inner">
+        
+
+        <div class="content post posts-expand">
+          
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://crazypudding.github.io/2016/10/11/Study-on-RemoteConfig-Basics/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Crazypudding">
+      <meta itemprop="description" content="有道无术术尚可求，有术无道止于术">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CrazyPudding's Note">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Firebase笔记(二)-Remote Config的简单使用
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-10-11 20:21:59" itemprop="dateCreated datePublished" datetime="2016-10-11T20:21:59+08:00">2016-10-11</time>
+            </span>
+
+          
+            <span id="/2016/10/11/Study-on-RemoteConfig-Basics/" class="post-meta-item leancloud_visitors" data-flag-title="Firebase笔记(二)-Remote Config的简单使用" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2016/10/11/Study-on-RemoteConfig-Basics/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2016/10/11/Study-on-RemoteConfig-Basics/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>6.7k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>6 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p><img src="http://img.crazypudding.com/firebaseRemoteConfig/RemoteConfig.png" alt="remoteconfig"></p>
+<h2 id="Remote-Config是什么？"><a href="#Remote-Config是什么？" class="headerlink" title="Remote Config是什么？"></a>Remote Config是什么？</h2><p>远程配置(Remote Config)是Firebase的功能之一。开发者可以通过在云端配置键值对来更改APP的一些属性，例如行为和外观。这样的功能也可以通过产品迭代更新来进行变换，但是产品的迭代是一个漫长的过程，少说也要几天。RemoteConfig可以快速实现这一过程，首先在本地设置一个参数名A和一个参数值a，当该参数的值需要改变时，在云端赋予参数名A一个新值b，发布之后，用户在下次打开APP的时候就会发现这个参数的值已经由a变成了b，省去了迭代一个版本的时间。</p>
+<a id="more"></a>
+
+<p>在理解通过远程配置来更改APP属性之前，先要知道一个Remote Config对象有三种参数值：<strong>Default Config</strong>(默认配置)、<strong>Active Config</strong>(活动配置)和 <strong>Fetched Config</strong>(已获取的配置)。</p>
+<p><strong>Default Config</strong>是用来存储在本地配置参数的值，就是默认情况下的参数值a。<br><strong>Fetched Config</strong>是最近一次从云端获取的值，之前的会被覆盖。Remote Config会在适当的情况下发起请求以获取云端配置的参数值b，此时获取到的b值并不会立刻赋给参数，而是保存在Fetched Config。<br><strong>Active Config</strong>是存储参数可用的值或者说是活动的值，Remote Config对象会用过get方法获取其中的值并赋给本地参数。</p>
+<p>现在整个远程配置的过程可以这样理解：在app的本地逻辑中设置一组键值对保存参数A和参数值a，Remote Config对象通过<code>get&lt;type&gt;</code>方法获取Active Config中的值并赋给相关变量，如果云端没有发布新的参数值，默认值a会传入Active Config中，如果在云端发布了参数值b，Remote Config对象会在适当的时候通过fetch方法获取b值并保存在Fetched Config中，随后调用activateFetched方法将参数值b传入Active Config并赋值给相关变量。这样就完成了远程配置的过程，这一过程会很迅速的完成，当然也可以手动控制请求变更的时间。可以参照下图进行理解：</p>
+<p><img src="http://img.crazypudding.com/firebaseRemoteConfig/api_use.png" alt="api_use"></p>
+<p>关于RemoteConfig的更多介绍，也可以观看<a href="http://v.youku.com/v_show/id_XMTU4NDMzNzg4OA==.html?f=27319609&o=1" target="_blank" rel="noopener">官方介绍视频</a>。</p>
+<h2 id="Remote-Config使用条件"><a href="#Remote-Config使用条件" class="headerlink" title="Remote Config使用条件"></a>Remote Config使用条件</h2><p>RemoteConfig这一功能可以在国内使用，只要设备满足了Google Play Services在9.6.1或更新，同时安装了Play Store即可使用。在虚拟机上也可正常使用，不过虚拟机反应速度不如真机快，过几分钟才会更新。</p>
+<h2 id="Remote-Config的简单使用"><a href="#Remote-Config的简单使用" class="headerlink" title="Remote Config的简单使用"></a>Remote Config的简单使用</h2><p>下面通过示例熟悉一下RemoteConfig的基本功能。将APP链接到firebase后就可以通过RemoteConfig的可用库来使用远程配置功能了。</p>
+<blockquote>
+<p><a href="http://crazypudding.com//2016/10/08/Study_on_firebase" target="_blank" rel="noopener">上一篇笔记</a>记录了将Firebase整合到APP的相关知识</p>
+</blockquote>
+<p>打开已链接了Firebase的项目，在<code>app/build.gradle</code>文件中新增firebase-config依赖：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">dependencies &#123;</span><br><span class="line">    compile fileTree(dir: &#39;libs&#39;, include: [&#39;*.jar&#39;])</span><br><span class="line">    ...</span><br><span class="line">    compile &#39;com.google.firebase:firebase-core:9.6.1&#39;</span><br><span class="line">    compile &#39;com.google.firebase:firebase-config:9.6.1&#39;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上面的操作已经实现了将RemoteConfig加入到应用中来，加完记得Sync Now。之后在布局文件中放置一个Button和一个TextView：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">LinearLayout</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">xmlns:tools</span>=<span class="string">"http://schemas.android.com/tools"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:id</span>=<span class="string">"@+id/activity_firebase"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:layout_height</span>=<span class="string">"match_parent"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:orientation</span>=<span class="string">"vertical"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:paddingBottom</span>=<span class="string">"@dimen/activity_vertical_margin"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:paddingLeft</span>=<span class="string">"@dimen/activity_horizontal_margin"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:paddingRight</span>=<span class="string">"@dimen/activity_horizontal_margin"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:paddingTop</span>=<span class="string">"@dimen/activity_vertical_margin"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">tools:context</span>=<span class="string">"com.example.pudding.firebaselearn.FirebaseActivity"</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">TextView</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:id</span>=<span class="string">"@+id/text_view"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:layout_width</span>=<span class="string">"wrap_content"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:layout_height</span>=<span class="string">"wrap_content"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:layout_gravity</span>=<span class="string">"center"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:text</span>=<span class="string">"Checking your text..."</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:textSize</span>=<span class="string">"20sp"</span> /&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">Button</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:text</span>=<span class="string">"@string/fetch_button_text"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:id</span>=<span class="string">"@+id/fetch_button"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:layout_width</span>=<span class="string">"match_parent"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:layout_height</span>=<span class="string">"wrap_content"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:layout_gravity</span>=<span class="string">"center"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:layout_marginTop</span>=<span class="string">"18dp"</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">LinearLayout</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>然后完成逻辑代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FirebaseActivity</span> <span class="keyword">extends</span> <span class="title">AppCompatActivity</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//申明参数</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String DEFAULT_TEXT_CONFIG_KEY = <span class="string">"default_text"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String LOADING_TEXT_CONFIG_KEY = <span class="string">"loading_text"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String PROMOTION_CONFIG_KEY = <span class="string">"is_promotion_on"</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String UPDATE_TEXT_CONFIG_KEY = <span class="string">"update_text"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> FirebaseRemoteConfig mFirebaseRemoteConfig;</span><br><span class="line">    <span class="keyword">private</span> TextView mTextView;</span><br><span class="line">    <span class="keyword">private</span> Button mFetchButton;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState);</span><br><span class="line">        setContentView(R.layout.activity_firebase);</span><br><span class="line"></span><br><span class="line">        mTextView = (TextView) findViewById(R.id.text_view);</span><br><span class="line"></span><br><span class="line">        mFetchButton = (Button) findViewById(R.id.fetch_button);</span><br><span class="line">        mFetchButton.setOnClickListener(<span class="keyword">new</span> View.OnClickListener() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View v)</span> </span>&#123;</span><br><span class="line">                fetchConfig();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//获取Remote Config 实例</span></span><br><span class="line">        mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();</span><br><span class="line"></span><br><span class="line">        <span class="comment">//设置Remote Config Settings为开发者模式</span></span><br><span class="line">        <span class="comment">//正常情况下每小时只能抓取5次在远程配置的参数值值，设置为开发者模式后可</span></span><br><span class="line">        <span class="comment">//以抓取更多次数，便于在开发过程中进行调试</span></span><br><span class="line">        FirebaseRemoteConfigSettings configSettings = <span class="keyword">new</span> FirebaseRemoteConfigSettings.Builder()</span><br><span class="line">                .setDeveloperModeEnabled(BuildConfig.DEBUG)</span><br><span class="line">                .build();</span><br><span class="line">        mFirebaseRemoteConfig.setConfigSettings(configSettings);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//设置默认的Remote Config value.app中默认使用的参数值(default value)</span></span><br><span class="line">        <span class="comment">//当需要对这些值进行调整时，可以在远程控制面板发布新的值(update value)到服务器</span></span><br><span class="line">        <span class="comment">//当app抓取到远程配置的值之后，下次打开app时，对应的参数值就会使用update value</span></span><br><span class="line">        mFirebaseRemoteConfig.setDefaults(R.xml.remote_config_defaults);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//抓取远程配置的参数值</span></span><br><span class="line">        fetchConfig();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//从服务器端抓取参数值</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">fetchConfig</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        mTextView.setText(mFirebaseRemoteConfig.getString(LOADING_TEXT_CONFIG_KEY));</span><br><span class="line"></span><br><span class="line">        <span class="comment">//设置自动抓取远程参数值的时间间隔，默认是43200s(12小时)</span></span><br><span class="line">        <span class="keyword">long</span> cacheExpiration = <span class="number">3600</span>;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//在开发者模式下将cacheExpiration设置为0，每次请求都能抓取到远程参数值</span></span><br><span class="line">        <span class="keyword">if</span> (mFirebaseRemoteConfig.getInfo().getConfigSettings().isDeveloperModeEnabled()) &#123;</span><br><span class="line">            cacheExpiration = <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        mFirebaseRemoteConfig.fetch(cacheExpiration)</span><br><span class="line">                .addOnCompleteListener(<span class="keyword">new</span> OnCompleteListener&lt;Void&gt;() &#123;</span><br><span class="line">                    <span class="meta">@Override</span></span><br><span class="line">                    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onComplete</span><span class="params">(@NonNull Task&lt;Void&gt; task)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">                        <span class="comment">//检测是否成功抓取到远程参数值</span></span><br><span class="line">                        <span class="keyword">if</span> (task.isSuccessful()) &#123;</span><br><span class="line">                            Toast.makeText(FirebaseActivity.<span class="keyword">this</span>, <span class="string">"Fetch Succeed"</span>, Toast.LENGTH_SHORT).show();</span><br><span class="line"></span><br><span class="line">                            <span class="comment">//激活抓取的远程参数值</span></span><br><span class="line">                            mFirebaseRemoteConfig.activateFetched();</span><br><span class="line">                        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                            Toast.makeText(FirebaseActivity.<span class="keyword">this</span>, <span class="string">"Fetch Failed"</span>, Toast.LENGTH_SHORT).show();</span><br><span class="line">                        &#125;</span><br><span class="line"></span><br><span class="line">                        displayText();</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//如果存在远程参数值，显示远程参数值，否则显示默认值</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">displayText</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="comment">//默认值</span></span><br><span class="line">        String initialText = mFirebaseRemoteConfig.getString(DEFAULT_TEXT_CONFIG_KEY);</span><br><span class="line">        <span class="keyword">if</span> (mFirebaseRemoteConfig.getBoolean(PROMOTION_CONFIG_KEY)) &#123;</span><br><span class="line"></span><br><span class="line">            <span class="comment">//获得远程参数值</span></span><br><span class="line">            String finalText = mFirebaseRemoteConfig.getString(UPDATE_TEXT_CONFIG_KEY);</span><br><span class="line"></span><br><span class="line">            mTextView.setText(finalText);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            mTextView.setText(initialText);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>新建一个xml资源文件保存default value(也可以选择使用Map对象)：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">defaultsMap</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">entry</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">key</span>&gt;</span>default_text<span class="tag">&lt;/<span class="name">key</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">value</span>&gt;</span>Hello World!<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">entry</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">entry</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">key</span>&gt;</span>loading_text<span class="tag">&lt;/<span class="name">key</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">value</span>&gt;</span>Checking your text...<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">entry</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">entry</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">key</span>&gt;</span>is_promotion_on<span class="tag">&lt;/<span class="name">key</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">value</span>&gt;</span>false<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">entry</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">entry</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">key</span>&gt;</span>update_text<span class="tag">&lt;/<span class="name">key</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">value</span>&gt;</span>There is no update<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">entry</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">defaultsMap</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>运行效果如下，当远程控制面板没发布更新时，会使用xml资源文件中的默认参数值：</p>
+<p><img src="http://img.crazypudding.com/firebase/default-value.png" alt="default_value"></p>
+<p>当在远程控制面板发布更新后，点击Fetch Remote Config，会获取云端的更新。</p>
+<p>远程配置：</p>
+<p><img src="http://img.crazypudding.com/remote-parameter.png" alt="remote-parameter"></p>
+<p>更新效果：</p>
+<p><img src="http://img.crazypudding.com/firebase/fetch_succeed.png" alt="fetch_succeed"></p>
+<h2 id="RemoteConfig的条件控制"><a href="#RemoteConfig的条件控制" class="headerlink" title="RemoteConfig的条件控制"></a>RemoteConfig的条件控制</h2><p>设置远程参数改变移动端的数据只是RemoteConfig最基本的功能，再高级和人性化一点的就是条件控制功能了。根据条件的选择，你可以指定特定的群体享受怎么样的改变，真正实现用户的VIP体验。</p>
+<p>由于这项功能需要一定的用户量为基础，所以先记录下使用的情况：</p>
+<p><img src="http://img.crazypudding.com/firebaseRemoteConfig/create-conditions.png" alt="create-conditions"></p>
+<p>在仪表板点击相应的参数或者新建参数时，右上角都会有一个<code>添加条件的值</code>，点击之后可以给各个参数定义不同的条件，只有才满足这个条件的情况下才能获取云端相应的值。</p>
+<p><img src="http://img.crazypudding.com/firebaseRemoteConfig/china.png" alt="china"></p>
+<p>像上图新建了一个名为china的条件(名称只能用英文)，限定国家为中国，也可以添加其需要同时满足的条件，点击后面的且就行了。那个颜色块是用于分类管理条件的，相似的条件可以用相同的颜色，便于分类。另外再新建一个条件限定国家为美国。</p>
+<p><img src="http://img.crazypudding.com/firebaseRemoteConfig/conditions.png" alt="conditions"></p>
+<p>新建好条件之后为条件添加相应的参数值。如图，就是说在中国地区就显示”你好！中国”，在买过就显示”Hello America!”，默认也就是不满足中国和美国的国家就显示”Hello Remote Config”。新建的条件会按从上往下的优先级进行匹配，如果匹配到第一个条件则不会再去匹配下面的条件，直接按照第一个条件的值进行更新，否则再向下匹配，知道有匹配的为止。当然，我们可以手动修改条件的优先级：</p>
+<p><img src="http://img.crazypudding.com/firebaseRemoteConfig/change-conditions.png" alt="change-conditions"></p>
+<p>可以看到，图片左上角多了一个选项卡，新建了条件之后，就会多出一个CONDITIONS选项卡，我们可以在这里修改条件的优先级，还能对条件进行二次编辑。</p>
+<p>以上就是RemoteConfig的基本功能的使用，通过手动获取云端更新，也可以结合Activity的生命周期，实现后台自动更新，RemoteConfig的云端配置更新占用的资源可忽略不计，在真机上能快速反应出云端的数据，当然也需要网速支持。</p>
+<hr>
+<blockquote>
+<p>文章属原创，欢迎转载，但请务必保留原文链接！</p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Android/" rel="tag"># Android</a>
+              <a href="/tags/Learning-Notes/" rel="tag"># Learning Notes</a>
+              <a href="/tags/Firebase/" rel="tag"># Firebase</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2016/10/08/Study-on-firebase/" rel="prev" title="Firebase笔记(一)-初探Firebase">
+      <i class="fa fa-chevron-left"></i> Firebase笔记(一)-初探Firebase
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2016/12/29/Learning-summary-of-SQLite/" rel="next" title="SQLite基础学习总结">
+      SQLite基础学习总结 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+        </div>
+        
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="http://www.beian.miit.gov.cn/" rel="noopener" target="_blank">赣ICP备16009806号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Crazypudding</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">69k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">1:03</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              leancloudSelector(url).innerText = 'Counter not initialized! More info at console err msg.';
+              console.error('ATTENTION! LeanCloud counter has security bug, see how to solve it here: https://github.com/theme-next/hexo-leancloud-counter-security. \n However, you can still use LeanCloud without security, by setting `security` option to `false`.');
+            
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"d6IWzX7FjgQks0Y7UioDD24l-gzGzoHsz","app_key":"GMrkaVwqnkjwRbJGmzs42wHK","server_url":null,"security":true};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/medium-zoom@1/dist/medium-zoom.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://crazypudding.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  var disqus_config = function() {
+    this.page.url = "http://crazypudding.github.io/2016/10/11/Study-on-RemoteConfig-Basics/";
+    this.page.identifier = "2016/10/11/Study-on-RemoteConfig-Basics/";
+    this.page.title = "Firebase笔记(二)-Remote Config的简单使用";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://crazypudding.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>

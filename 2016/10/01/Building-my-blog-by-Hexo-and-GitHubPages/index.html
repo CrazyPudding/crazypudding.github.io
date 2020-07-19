@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <meta name="msapplication-config" content="/images/browserconfig.xml">
+  <meta name="google-site-verification" content="v4WrTLM4pCJ7GqyDZCubQai7qb5ypHbCQYSA7cabnJA">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Dancing Script:300,300italic,400,400italic,700,700italic|Source Code Pro:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  
+  <link rel="stylesheet" href="/lib/animate-css/animate.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"crazypudding.github.io","root":"/","scheme":"Gemini","version":"8.0.0-rc.4","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":true,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"disqus","storage":true,"lazyload":false,"nav":null,"activeClass":"disqus"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}}};
+  </script>
+
+  <meta name="description" content="前言其实我的博客在今年6月份就开始搭建了，当时是参加了Google的studyjams活动，有一个阶段就是需要搭建自己的个人博客，在那之前，我并没有真正接触过博客，虽然之前有接触过一些编程方面的知识，但也是在那时候，真正开启了我的编程之旅。好像有点扯了，回归正途，当时由于活动需要，我跟着博主Sunwhut的如何利用GitHub Pages和Hexo快速搭建个人博客走了一遍，大致弄出了博客的雏形，不">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用Hexo + GitHub Pages搭建个人博客详解">
+<meta property="og:url" content="http://crazypudding.github.io/2016/10/01/Building-my-blog-by-Hexo-and-GitHubPages/">
+<meta property="og:site_name" content="CrazyPudding&#39;s Note">
+<meta property="og:description" content="前言其实我的博客在今年6月份就开始搭建了，当时是参加了Google的studyjams活动，有一个阶段就是需要搭建自己的个人博客，在那之前，我并没有真正接触过博客，虽然之前有接触过一些编程方面的知识，但也是在那时候，真正开启了我的编程之旅。好像有点扯了，回归正途，当时由于活动需要，我跟着博主Sunwhut的如何利用GitHub Pages和Hexo快速搭建个人博客走了一遍，大致弄出了博客的雏形，不">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://img.crazypudding.com/hexo/init_blog/sign_up_for_github.png">
+<meta property="og:image" content="http://img.crazypudding.com/hexo/init_blog/github_home_page.png">
+<meta property="og:image" content="http://img.crazypudding.com/hexo/init_blog/create_repository.png">
+<meta property="og:image" content="http://img.crazypudding.com/hexo/init_blog/new_repository.png">
+<meta property="og:image" content="http://img.crazypudding.com/hexo/init_blog/install_hexo.png">
+<meta property="og:image" content="http://img.crazypudding.com/hexo/init_blog/hexo_init.png">
+<meta property="og:image" content="http://img.crazypudding.com/hexo/init_blog/localhost.png">
+<meta property="og:image" content="http://img.crazypudding.com/hexo/init_blog/SSH_and_GPG_keys.png">
+<meta property="og:image" content="http://img.crazypudding.com/hexo/init_blog/set_deployment.png">
+<meta property="article:published_time" content="2016-10-01T01:04:39.000Z">
+<meta property="article:modified_time" content="2019-04-13T15:04:13.400Z">
+<meta property="article:author" content="Crazypudding">
+<meta property="article:tag" content="Hexo">
+<meta property="article:tag" content="GitHubPages">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://img.crazypudding.com/hexo/init_blog/sign_up_for_github.png">
+
+<link rel="canonical" href="http://crazypudding.github.io/2016/10/01/Building-my-blog-by-Hexo-and-GitHubPages/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>使用Hexo + GitHub Pages搭建个人博客详解 | CrazyPudding's Note</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-172930850-1"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'UA-172930850-1');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?3c0226d1e15c67d14d87c4d6771bfb82";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <main class="main">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+        <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+        <span class="toggle-line toggle-line-first"></span>
+        <span class="toggle-line toggle-line-middle"></span>
+        <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">CrazyPudding's Note</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#基础环境准备"><span class="nav-number">2.</span> <span class="nav-text">基础环境准备</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-GitHub-Pages"><span class="nav-number">2.1.</span> <span class="nav-text">1.GitHub Pages</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-Git"><span class="nav-number">2.2.</span> <span class="nav-text">2.Git</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-Hexo"><span class="nav-number">2.3.</span> <span class="nav-text">3.Hexo</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#搭建过程"><span class="nav-number">3.</span> <span class="nav-text">搭建过程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-GitHub-Pages相关配置"><span class="nav-number">3.1.</span> <span class="nav-text">1.GitHub Pages相关配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-安装Git-for-Windows"><span class="nav-number">3.2.</span> <span class="nav-text">2.安装Git for Windows</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-配置Hexo"><span class="nav-number">3.3.</span> <span class="nav-text">3.配置Hexo</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-部署Hexo到GitHub"><span class="nav-number">3.4.</span> <span class="nav-text">4.部署Hexo到GitHub</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#发表你的博文"><span class="nav-number">4.</span> <span class="nav-text">发表你的博文</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#学会使用Markdown格式书写"><span class="nav-number">4.1.</span> <span class="nav-text">学会使用Markdown格式书写</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#新建博文"><span class="nav-number">4.2.</span> <span class="nav-text">新建博文</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#美化主题"><span class="nav-number">5.</span> <span class="nav-text">美化主题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#为博客选择图床"><span class="nav-number">6.</span> <span class="nav-text">为博客选择图床</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#将博客同时部署到Coding"><span class="nav-number">7.</span> <span class="nav-text">将博客同时部署到Coding</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#后记"><span class="nav-number">8.</span> <span class="nav-text">后记</span></a></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Crazypudding"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Crazypudding</p>
+  <div class="site-description" itemprop="description">有道无术术尚可求，有术无道止于术</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">12</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/crazypudding" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;crazypudding" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </header>
+
+      
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/crazypudding" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div id="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+      <div class="main-inner">
+        
+
+        <div class="content post posts-expand">
+          
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://crazypudding.github.io/2016/10/01/Building-my-blog-by-Hexo-and-GitHubPages/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Crazypudding">
+      <meta itemprop="description" content="有道无术术尚可求，有术无道止于术">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CrazyPudding's Note">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          使用Hexo + GitHub Pages搭建个人博客详解
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-10-01 09:04:39" itemprop="dateCreated datePublished" datetime="2016-10-01T09:04:39+08:00">2016-10-01</time>
+            </span>
+
+          
+            <span id="/2016/10/01/Building-my-blog-by-Hexo-and-GitHubPages/" class="post-meta-item leancloud_visitors" data-flag-title="使用Hexo + GitHub Pages搭建个人博客详解" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2016/10/01/Building-my-blog-by-Hexo-and-GitHubPages/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2016/10/01/Building-my-blog-by-Hexo-and-GitHubPages/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>8.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>8 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>其实我的博客在今年6月份就开始搭建了，当时是参加了Google的studyjams活动，有一个阶段就是需要搭建自己的个人博客，在那之前，我并没有真正接触过博客，虽然之前有接触过一些编程方面的知识，但也是在那时候，真正开启了我的编程之旅。好像有点扯了，回归正途，当时由于活动需要，我跟着博主Sunwhut的<a href="http://sunwhut.com/2015/10/30/buildBlog/" target="_blank" rel="noopener">如何利用GitHub Pages和Hexo快速搭建个人博客</a>走了一遍，大致弄出了博客的雏形，不过由于简单搭好之后一直没有时间完善和编写博客(因为博主菜啊==，时间都用来入门了)，直到前几天，终于扛不住了，觉得还是要有个地方记录和分享感想的地方，虽然已经有了形如CSDN，简书等不错的平台，但哪有自己的地方用着舒服，于是我又开始折腾起博客。</p>
+<a id="more"></a>
+
+<p>想起之前跟着教程搭建的时候还是遇到了不少的坑，翻阅了很多搭建博客的教程，感觉有些很容易阻挡小白的细节被忽略了，于是乎，我翻出了Hexo和GitHub Pages的官方文档折腾了起来。刚完工，虽然目前还不是特别完善，日后一定会丰富起来的。在这里记录下整个过程，希望能对自己对大家都有一定的帮助。这篇文章会长到让你不想看，不过你静下心来看肯定会有收获！下面请认真听（敲黑板！）。</p>
+<h2 id="基础环境准备"><a href="#基础环境准备" class="headerlink" title="基础环境准备"></a>基础环境准备</h2><p>“工欲善其事，必先利其器”，这句话是很有道理的，只有把准备工作做足了，后面的过程才不会给自己留下太多坑。搭建博客的方法有很多，可以像建站那样实打实的以前端的姿态完成自己的博客，相信大家和博主一样，不会有很多时间去像管理个人网站一样去管理博客的后台，我们只想安安静静的写个博客而已，所以选择云托管平台和别人搭好的博客框架是比较明智的，这种组合也有很多，因为没用过不做评价，我选择了口碑不错的一组组合来完成我的博客搭建。以下就是要准备的工具了：</p>
+<h3 id="1-GitHub-Pages"><a href="#1-GitHub-Pages" class="headerlink" title="1.GitHub Pages"></a>1.GitHub Pages</h3><p>作为程序员的你，一定听说过Github，如果没有，出门左拐有谷歌，不会？！好好反思一下再来吧。GitHub对于遨游在代码世界的我们是再熟悉不过了，即使你和我一样没有过很多次的push也应该知道他是干嘛的。而GitHub Pages是GitHub推出的一项用于托管静态网站的服务，我们可以把博客的静态页面托管在上面形成博客平台。下面的原因足以证明GitHubPages能够胜任这项工作：</p>
+<blockquote>
+<ul>
+<li>GitHub提供1GB仓库大小(总大小，超过1GB会有限制)，放放代码足够了</li>
+<li>每月100GB的带宽和10万次请求</li>
+<li>GitHub和程序员关系密切，管理博客相当简单</li>
+</ul>
+</blockquote>
+<p>GitHubPages有两种基本的托管页面：第一种是个人/组织主页，这种页面每个账号只能一个，因为它必须要以用户名命名仓库名，而且有固定的命名方式，这个后面再说；第二种是项目的托管页面，每个项目都可以有。我们自然选择第一种来托管自己的博客了。</p>
+<p>因此，我们需要的第一个工具是GitHub账号，后面搭建过程会详细介绍。</p>
+<h3 id="2-Git"><a href="#2-Git" class="headerlink" title="2.Git"></a>2.Git</h3><p>Git是一种版本控制工具，我们后期会借助Git来完成博客的部署。会一些日常用的命令就行，文章里也会介绍，如果你还没有了解过或者想了解更全面的关于Git的知识，可以下载学习Git官方推荐书籍：<br><a href="https://git-scm.com/book/en/v2" target="_blank" rel="noopener">《Pro Git第二版·英文版》</a><br><a href="https://www.gitbook.com/book/bingohuang/progit2/details" target="_blank" rel="noopener">《Pro Git第二版·中文版》</a></p>
+<p>至于客户端的下载，你可以选择<a href="https://git-for-windows.github.io/" target="_blank" rel="noopener">Git For Windows</a>或者<a href="https://desktop.github.com/" target="_blank" rel="noopener">GitHub的图形界面</a>，推荐前者，操作更简单，而且逼格满满。后面会提到安装过程。</p>
+<h3 id="3-Hexo"><a href="#3-Hexo" class="headerlink" title="3.Hexo"></a>3.Hexo</h3><p>Hexo出自于<a href="https://zespia.tw/" target="_blank" rel="noopener">Tommy Chen</a>之手，基于Node.js，是一个快速、简洁而且高效的静态博客框架。可以快速生成页面，支持 * Markdown * 的书写格式，可以一键部署到云端，另外，如果有需要的话，它还支持丰富的插件。</p>
+<p>因此，选择Hexo作为博客框架也是不错的，由于它基于Node，我们还需要准备好Node.js安装包。如果你的电脑上还没有Node的话，可以在这里下载<a href="https://nodejs.org/zh-cn/" target="_blank" rel="noopener">最新版安装包</a>，或者使用更快捷的nvm方式下载最新的Node，不过只有Mac和Linux是官方支持的，Windows平台是第三方的。详情参考<a href="https://github.com/creationix/nvm" target="_blank" rel="noopener">nvm文档</a>。</p>
+<p>如果这些都准备好了，不要着急，下面我们就一起来一步步完成博客的搭建。</p>
+<h2 id="搭建过程"><a href="#搭建过程" class="headerlink" title="搭建过程"></a>搭建过程</h2><p>看了前面的一些理论知识如果觉得有点无聊的话，现在就是大显身手的时候了。</p>
+<h3 id="1-GitHub-Pages相关配置"><a href="#1-GitHub-Pages相关配置" class="headerlink" title="1.GitHub Pages相关配置"></a>1.GitHub Pages相关配置</h3><p>上面说到我们需要注册一个GitHub账号来使用GitHub Pages服务，点击进入<a href="https://github.com" target="_blank" rel="noopener">GitHub主页</a>，你会看到如下界面：</p>
+<p><img src="http://img.crazypudding.com/hexo/init_blog/sign_up_for_github.png" alt="sign_up_for_github"></p>
+<p>根据提示填写相关信息，推荐使用常用邮箱，方便。点击<code>Sign up for Github</code>进行注册，之后邮箱会收到验证邮件，记住 *<em>一定要验证信息 *</em> ，不然不能使用GitHub Pages服务。</p>
+<p>拥有GitHub账号之后，登陆<a href="https://github.com" target="_blank" rel="noopener">GitHub主页</a>，新注册的账户都是这样的界面：</p>
+<p><img src="http://img.crazypudding.com/hexo/init_blog/github_home_page.png" alt="new_home_page"></p>
+<p>新注册的用户可以点图示的<code>New repositery</code>创建新的仓库，或者老用户点击右上角的<code>＋</code>展开下拉菜单里也有<code>New repositery</code>按钮，点击之后按下图设置好仓库属性：</p>
+<p><img src="http://img.crazypudding.com/hexo/init_blog/create_repository.png" alt="craete_repository"></p>
+<p>** 一定要看清仓库名的填写要求，之前也提过要用特定格式命名，<code>username.github.io</code>就是使用个人主页的固定命名方式 ，也是以后博客的域名。这是GitHub Pages的规定，要记住！**。之后你会看到这样的界面：</p>
+<p><img src="http://img.crazypudding.com/hexo/init_blog/new_repository.png" alt="new_repository"></p>
+<p>至此，你就拥有了自己在GitHub上的博客仓库了，只等着添加内容进去，我们把添加内容的事先放一放，接着打基础。</p>
+<h3 id="2-安装Git-for-Windows"><a href="#2-安装Git-for-Windows" class="headerlink" title="2.安装Git for Windows"></a>2.安装Git for Windows</h3><p>还记得之前下载的Git for Windows安装包么，现在就像安装普通软件一样进行双击安装就行，完成之后，你会在开始菜单栏找到GitBash这个软件，这就是Git的控制台，打开GitBash并输入如下指令来检测Git是否安装成功：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git --version</span><br></pre></td></tr></table></figure>
+
+<p>如果显示出了git相应的版本信息，那么说明Git安装成功了。</p>
+<h3 id="3-配置Hexo"><a href="#3-配置Hexo" class="headerlink" title="3.配置Hexo"></a>3.配置Hexo</h3><p>上面也说过，因为Hexo是基于Node搭建的，所以我们需要在电脑安装Node的环境才能安装和运行Hexo。先找到之前下载的Node.js安装包，如果你使用的是nvm的方式，那么就忽略安装Node这一过程。Node的安装也很简单，双击之后一路Next就行了。完成之后也可以使用命令行检测是否安装成功，在GitBash中输入如下指令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">node -v</span><br><span class="line">npm -v</span><br></pre></td></tr></table></figure>
+
+<p>同样，如果出现了显示版本信息的数字则表明安装成功。</p>
+<p>Node安装完毕之后，就有了基础安装Hexo了，输入以下指令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-cli -g</span><br></pre></td></tr></table></figure>
+<p>安装完成之后你会看到类似下面的界面：</p>
+<p><img src="http://img.crazypudding.com/hexo/init_blog/install_hexo.png" alt="install_hexo"></p>
+<p>如果你看到一个WARN提示，属于正常情况，不影响使用。接着输入下面的指令来初始化Hexo，这一步会产生你的本地博客文件：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> e:/</span><br><span class="line">hexo init MyBlog</span><br></pre></td></tr></table></figure>
+
+<p>解释一下这两行命令，首先是利用cd命令进入e盘，在e盘执行<code>hexo init</code>命令来初始化生成博客文件，后面是我准备放本地博客文件的文件夹名称，可以改成你喜欢的，第一步中的路径也可以随意选择。这两步执行完毕我会在e盘根目录下发现多出了一个名为MyBlog的文件夹，而你相应的目录下也出有一个相应名字的文件夹，这个文件夹，我们通常叫<strong>站点所在文件夹</strong>。此时再运行如下命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> MyBlog</span><br><span class="line">npm install</span><br></pre></td></tr></table></figure>
+
+<p>这两行命令会在站点所在文件夹中安装Hexo需要的组件，当你看到下图中红框中的提示时，表示你本地的博客框架已经没有问题了。</p>
+<p><img src="http://img.crazypudding.com/hexo/init_blog/hexo_init.png" alt="hexo_init"></p>
+<p>不信的话你可以试试下面指令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hexo g <span class="comment">#运行之后会出现一长串字符，这是在生成运行环境</span></span><br><span class="line">hexo s <span class="comment">#运行之后会出现Hexo is running at http://localhost:4000/.</span></span><br></pre></td></tr></table></figure>
+
+<p>这两个命令是以后经常会用到的，第一个是生成运行环境，会在站点所在文件夹下多出一个<code>.public</code>的文件夹，这里面的内容就是后面要部署到github上的内容。第二个命令是开启服务器，在本地4000端口预览博客，打开浏览器输入<code>http://localhost:4000/</code>能看到效果如下：</p>
+<p><img src="http://img.crazypudding.com/hexo/init_blog/localhost.png" alt="localhost"></p>
+<p>这样可以在部署之前检查问题，如果要停止服务器可以按Ctrl+C，看到提示再输入y。另外还可以使用<code>hexo clean</code>命令来清楚缓存，也就是删除<code>.public</code>文件夹，如果以后出现一些看不懂的bug，可以试试先clean再重新<code>hexo g</code>也许可以解决。</p>
+<p>至此，Hexo的基本配置也完成了，就剩下最后一步把本地的博客部署到GitHub就完成一个基础的博客了。还等什么，赶紧来吧！</p>
+<h3 id="4-部署Hexo到GitHub"><a href="#4-部署Hexo到GitHub" class="headerlink" title="4.部署Hexo到GitHub"></a>4.部署Hexo到GitHub</h3><p>我们GitHub端和本地Hexo已经分别配置好了，但是现在它们还是相互独立的两个个体，我们要把本地的博客文件部署到GitHub端首先要使这两个个体产生联系，这时就需要用到之前安装的Git了，用Git添加SSH key，获取GitHub上传文件的权限，SSH key是GitHub的一种验证机制，如果某天你想用Git上传文件到GitHub发现报错<code>Permission denied (publickey)</code>就是因为没有配置SSH key。除此之外，要把Hexo部署到GitHub，还需要给Hexo安装一个插件<a href="https://github.com/hexojs/hexo-deployer-git" target="_blank" rel="noopener">hexo-deployer-git</a>，我们现在来实际操作。</p>
+<p>** 首先配置SSH key **（如果配置过的可以跳过这一步）。在GitBash中输入：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git config --global user.name <span class="string">"yourname"</span> <span class="comment">#"yourname"指github的账户名</span></span><br><span class="line">gti config --global user.email <span class="string">"youremail"</span> <span class="comment">#"youremail"指github的注册邮箱</span></span><br></pre></td></tr></table></figure>
+
+<p>这一步相当于在Git登陆了你的Github账号，你可以输入不包含”yourname”/“youremail”的相应命令来查看当前登录的账户。可以通过下面命令检查本地是否生成过key：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> ~/.ssh</span><br><span class="line">ls</span><br></pre></td></tr></table></figure>
+
+<p>这两条命令是用来检测本地是否存在id_rsa.pub或id_dsa.pub文件，如果没有的话，第一条命令执行完就会提示不存在，也可以去<code>C:\User\yourusername\</code>文件夹中找找看有没有<code>.ssh</code>文件夹，如果<code>.ssh</code>文件夹中有上面提到的两个文件则说明已经生成了key，不用再创建key。如果没有，那就创建一个，输入：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh-keygen -t rsa -C <span class="string">"youremail"</span></span><br></pre></td></tr></table></figure>
+
+<p>现在可以回之前的<code>.ssh</code>去找id-rsa.pub了。然后回到GitHub的主页，点击<code>＋</code>下拉选择settings，会出现如下界面；</p>
+<p><img src="http://img.crazypudding.com/hexo/init_blog/SSH_and_GPG_keys.png" alt="SSH Key"></p>
+<p>按图中选择New SSH key，用文本编辑器打开id_rsa.pub，将里面的内容全部复制到GitHub界面上名为key的文本框里，上面的title可以自定义，保存就ok了。</p>
+<p>现在可以试试SSH key是否有效，在GitBash中输入：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh -T git@github.com</span><br></pre></td></tr></table></figure>
+
+<p>如果看到You’ve successfully authenticated说明配置成功了。现在已经把GitBash和GitHub云端连接起来了，可以向GitHub上传文件了，刚刚有说过，要把博客部署到GitHub，还需要一个hexo-deployer-git插件，在GitBash中通过cd命令进入站点所在文件夹，输入：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-deployer-git --save</span><br></pre></td></tr></table></figure>
+
+<p>这个插件可以通过Git命令将博客部署到GitHub，还有最后一步，我们就可以通过博客的域名来在线访问自己的博客了。在站点所在文件夹找到<code>_condig.yml</code>，用文本编辑器打开并滑倒最底部修改里面的内容如下：</p>
+<p><img src="http://img.crazypudding.com/hexo/init_blog/set_deployment.png" alt="set_deployment"></p>
+<p>这里要注意，凡是修改配置文件，<strong>属性名的冒号后面一定要有一个空格才能加属性值</strong>，不然会报错。现在真的是大功就要告成了，回到GitBash中，输入：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">hexo clean</span><br><span class="line">hexo g</span><br><span class="line">hexo d <span class="comment">#这个命令就是将本地博客部署到GitHub上的</span></span><br></pre></td></tr></table></figure>
+
+<p>如果还需要本地预览的话，可以向之前那样将<code>hexo d</code>改为<code>hexo s</code>然后在<a href="http://localhost:4000" target="_blank" rel="noopener">http://localhost:4000</a>预览最终效果，不需要预览的话就直接部署博客，部署完成就可以使用博客域名(yourusername.github.io)来访问博客了，可以把这个链接分享给小伙伴们，让他们来浏览你的博客，完美~</p>
+<h2 id="发表你的博文"><a href="#发表你的博文" class="headerlink" title="发表你的博文"></a>发表你的博文</h2><p>辛辛苦苦终于把博客搭建好了，不过目前为止好像都没有提到过怎么样发表博文，不会发表博文的博主不是好程序员，接下来再介绍发表博文的有关步骤。</p>
+<h3 id="学会使用Markdown格式书写"><a href="#学会使用Markdown格式书写" class="headerlink" title="学会使用Markdown格式书写"></a>学会使用Markdown格式书写</h3><p>发博文之前，一定要会写，这个会写跟文采无关，是技术上的会写。之前有提到Hexo支持Markdown书写格式，没接触过的人可能觉得写个博客而已，又要学新的语言…不要着急，Markdown是一款轻量级的书写语言，保证你用过之后会无法自拔的爱上它。因为它不仅书写简单，而且边写边排版，再也不用花十分钟写却要半小时排版了。</p>
+<p>Markdown的语法相当简单，写着写着就会了，可以参考一下文档学习Markdown语法：</p>
+<p><a href="http://wowubuntu.com/markdown/" target="_blank" rel="noopener">Markdown语法说明（简体中文版）</a><br><a href="http://blog.leanote.com/post/freewalk/Markdown-%E8%AF%AD%E6%B3%95%E6%89%8B%E5%86%8C" target="_blank" rel="noopener">Markdown语法手册（完整整理版）</a><br><a href="https://www.zybuluo.com/mdeditor" target="_blank" rel="noopener">Cmd Markdown编辑阅读器</a>，这个在线编辑器左边写右边显示效果，可以用来练手。</p>
+<p>现在懂了Markdown语法，那在哪里写呢？我们要挑一个Markdown编辑器，Markdown的编辑器也有很多，可以到网上搜索，如果不想搜就试试博主的推荐，文本编辑器<code>Sublime Text</code>配Markdown插件，这个不是吹，如果喜欢捣鼓，可以把ST当IDE用，博主用它用的很爽，具体方法自己搜哟，也欢迎在下面留言~让博主为你解答。</p>
+<h3 id="新建博文"><a href="#新建博文" class="headerlink" title="新建博文"></a>新建博文</h3><p>大家应该注意到了，我们之前部署好的博客里面已经有了一篇名为<code>Hello World</code>的文章，这篇文章可以理解为系统自带的，不过我们也可以把它删掉，删之前，博主一定要告诉大家，如果你的博客里一篇文章都没有的话，不能本地预览，也不能部署到GitHub，因为会报错。所以在写出自己的文章之前，这一篇<code>Hello World</code>还是删不得啊。</p>
+<p>那么这篇文章到底在哪呢？有两个地方，一个是站点所在文件夹的source目录下的_posts文件夹里，你博客里面的文章都是放在这个文件夹里；还有一个，聪明的你一定想到了在.public里面了，因为之前说在执行<code>hexo g</code>指令的时候就会把部署到GitHub的文件都放到.public里面，这样便于管理，也不会把一些不必要的文件上传。我们修改当然是修改站点文件夹里的文件了，进去之后你回发现，那篇<code>Hello World</code>的后缀名是<code>.md</code>，没错，这就是Markdown格式的文件，会自动识别Markdown语法。</p>
+<p>既然我们可以通过删除本地文件重新部署的方式来删除博文，当然也可以新建一个md文件咯，是的，这是其中的一种方法，另外一种当然是用命令行来新建了，打开GitBash输入：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo new <span class="string">"文章标题"</span></span><br></pre></td></tr></table></figure>
+
+<p>执行完成之后，你可以在_posts文件夹中找到刚刚新建的md文件了，打开之后你会发现和收到创建的不一样，通过命令行创建的md文件里面有内容：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">---</span><br><span class="line">title: 文章标题</span><br><span class="line">date: 创建文章的时间</span><br><span class="line">tags: 文章标签</span><br><span class="line">---</span><br></pre></td></tr></table></figure>
+
+<p>这个就是通过默认的样式来创建了一篇文章，你可以对上面的内容进行修改比如添加标签之后再往下接着写文章，也可以直接开始往下写。写完保存之后，就可以通过<code>hexo g</code>、<code>hexo d</code>来更新你的博客。只要你修改了博客里面的任意内容而且想要应用这种改变的话，就需要用这两个命令来更新GitHub端的文件。到这里，你就可以自己编写并且发表博文了！是不是很开心！</p>
+<p>你可能会问，默认的样式在哪里，可不可以自定义创建文章的样式，Of Cause！不过上面说的足够平常发文用的了，如果想深入了解可以研究<a href="https://hexo.io/zh-cn/docs" target="_blank" rel="noopener">Hexo官方文档</a>。</p>
+<h2 id="美化主题"><a href="#美化主题" class="headerlink" title="美化主题"></a>美化主题</h2><p>现在你已经可以发表自己的文章到博客里了，但是发现没有，默认的主题并不是很美观，下面我们要做的事就是换掉主题，犒劳犒劳自己的眼睛。</p>
+<p>Hexo除了默认的主题以外，还为我们提供了很多特别漂亮的主题，可以到<a href="https://hexo.io/themes/" target="_blank" rel="noopener">官方主题站</a>搜索自己喜欢的主题，也可以去万能的网上搜索，也有很多不错的主题，都会附有配置解释文档的。博主选择的是NexT，就是你现在看到的这个，<a href="http://theme-next.iissnan.com/" target="_blank" rel="noopener">官方配置文档在此</a>，我就不再啰嗦了，我得配置也不一定合你胃口，照着官方文档来总折腾出你喜欢的主题的~</p>
+<p>安装主题的统一方式是，打开GitBash，用cd进入站点所在文件夹，输入：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> 主题GitHub仓库地址 themes/主题名</span><br></pre></td></tr></table></figure>
+
+<p>还记得我们部署博客时修改过的_config.yml文件吗，这是一个配置文件。每个主题的文件夹里也有一个这样的文件，前者是<code>站点配置文件</code>，可以修改博客的相关属性，后者是<code>主题配置文件</code>，可以修改主题的相关属性。下载好主题之后，要想应用主题当然是修改<code>站点配置文件</code>，在站点配置文件里找到theme字段，将属性值改为主题名(就是你保存主题时的文件名)。</p>
+<p>好了，美化主题就是这样了，有问题可以在下面留言哟~</p>
+<h2 id="为博客选择图床"><a href="#为博客选择图床" class="headerlink" title="为博客选择图床"></a>为博客选择图床</h2><p>我们已经会写博文发博文了，不过现在写的博文应该都是纯文字的，如果想要给博文配图要怎么办呢？通过<a href="https://hexo.io/zh-cn/docs" target="_blank" rel="noopener">Hexo官方文档</a>以及Markdown语法的学习，我们知道了给博文配图有以下两种方法：</p>
+<blockquote>
+<p>1.通过把图片存放到相应的资源文件夹，随博客一起部署到GitHub。这种方法其实就相当于把图片存放在GitHub上了，只是大家都知道GitHub在国内的速度其实不是很乐观，而且随着博文数量的增多，图片的大容量会把GitHub的容易用完，那就GG了。 </p>
+<p>2.通过利用Markdown语法给博文添加图片链接，在观看博文的时候在线加载图片。</p>
+</blockquote>
+<p>上面两种方法很明显能对比出来，第二种方法比第一种好太多，那么这个图片链接(称为外链)从哪里来呢？我们要把图片存放在哪呢？这时候，图床就出现了。</p>
+<p>顾名思义，图床就是存放图片的地方，而且可以利用图床对相应图片产生的外链在博文在插入图片。图床的种类也是一搜一大把，不过我转了一圈，还是觉得七牛比较实在，所以图库也有了选择。</p>
+<p>按照<a href="https://support.qiniu.com/hc/kb/article/69936/" target="_blank" rel="noopener">七牛提供的步骤</a>注册，如果大家也选择使用七牛的话，可以通过这个<a href="https://portal.qiniu.com/signup?code=3lf1vc3jjpavm" target="_blank" rel="noopener">注册链接</a>进行注册，可以帮我获得5GB/月的流量，先谢过了！注册完成可以看到，其实免费容量和流量都只有1GB，身份认证后会翻十倍，认证可以换来10GB的容量和10GB的CND流量，还是很划得来的。</p>
+<blockquote>
+<p>这里的容量是指云空间的存储容量，流量是指访问图片产生的流量，也就是如果一张10k的图片访问10次会产生100k的流量，所以写博客的图片最好还是控制下大小，想要高清无码就准备大量银子吧。</p>
+</blockquote>
+<p>10GB的容量和流量对于写博客来说是够的，不过在你余额为零的情况下，是不能使用自定义域名来控制图片外链的，我曾因为这个想去找其他图床，不过实在没有更好的，而且使用默认的图片外链其实影响不大，如果有强迫症就充10块钱吧，总体来说，七牛的免费额度写写博客应该是够够的。另外再给大家推荐一个工具<a href="http://developer.qiniu.com/code/v6/tool/qshell.html" target="_blank" rel="noopener">qshell</a>，这是七牛官方的上传工具。因为使用网页上传然后再复制外链太麻烦了，试试qshell吧，命令行操作，相当快捷而且酷，你会爱上它的~</p>
+<h2 id="将博客同时部署到Coding"><a href="#将博客同时部署到Coding" class="headerlink" title="将博客同时部署到Coding"></a>将博客同时部署到Coding</h2><p>当上面的一切都已经完成以后，本来是可以安安静静的写博客了，不过GitHub在国内的访问速度着实令人着急，不过还好，国内有了和GitHub一样的圣地，那就是<a href="https://coding.net" target="_blank" rel="noopener">Coding</a>，大家可以同时把博客部署到GitHub和Coding，当你的博客有访客时，国内网走Coding，国外网走GitHub，解决了GitHub网速慢的问题~</p>
+<p>由于在绑定自定义域名之前，访问GitHub Pages和Coding Pages的网址是不一样的，而我的域名此时正在实名审核中，所以关于这一块的内容大家自行Google~</p>
+<blockquote>
+<p>访问GitHub Pages使用:yourusername.github.io<br>访问Coding Pages使用:yourusername.coding.me</p>
+</blockquote>
+<h2 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h2><p>这篇博客终于写完了，之前以为搭建博客会是一个很艰难得过程，搭完才发现也还挺轻松的，而且作为一名程序猿，以后的道路上怎么可能少得了折腾这两个字？！！所以，如果有想法，大胆的去做吧，日后你会感谢现在拼死拼活的自己。</p>
+<p>回想整个过程，我参考了各种官方文档，深感官方文档无疑是最基础的答疑手册，英文文档也没什么好怕的，上去就是干。当然也得感谢那些博主的经验为我铺了路，以下是参考文档(排序无先后)：</p>
+<p><a href="https://help.github.com/categories/github-pages-basics/" target="_blank" rel="noopener">GitHub Pages官方说明文档</a><br><a href="https://hexo.io/zh-cn/docs" target="_blank" rel="noopener">Hexo官方文档</a><br><a href="http://theme-next.iissnan.com/" target="_blank" rel="noopener">NexT主题官方文档</a><br><a href="http://developer.qiniu.com/code/v6/tool/qshell.html" target="_blank" rel="noopener">qshell七牛官方文档</a><br><a href="http://sunwhut.com/2015/10/30/buildBlog/" target="_blank" rel="noopener">如何利用GitHub Pages和Hexo快速搭建个人博客</a></p>
+<p>最后的最后，如果你有任何疑问或者对我的文章有好的建议，无限欢迎给我留言~</p>
+<hr>
+<blockquote>
+<p>文章属原创，欢迎转载，但请务必保留原文链接！</p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Hexo/" rel="tag"># Hexo</a>
+              <a href="/tags/GitHubPages/" rel="tag"># GitHubPages</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2016/10/05/Configurating-java-development-environment/" rel="next" title="详解Java开发环境配置">
+      详解Java开发环境配置 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+        </div>
+        
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="http://www.beian.miit.gov.cn/" rel="noopener" target="_blank">赣ICP备16009806号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Crazypudding</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">69k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">1:03</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              leancloudSelector(url).innerText = 'Counter not initialized! More info at console err msg.';
+              console.error('ATTENTION! LeanCloud counter has security bug, see how to solve it here: https://github.com/theme-next/hexo-leancloud-counter-security. \n However, you can still use LeanCloud without security, by setting `security` option to `false`.');
+            
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"d6IWzX7FjgQks0Y7UioDD24l-gzGzoHsz","app_key":"GMrkaVwqnkjwRbJGmzs42wHK","server_url":null,"security":true};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/medium-zoom@1/dist/medium-zoom.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://crazypudding.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  var disqus_config = function() {
+    this.page.url = "http://crazypudding.github.io/2016/10/01/Building-my-blog-by-Hexo-and-GitHubPages/";
+    this.page.identifier = "2016/10/01/Building-my-blog-by-Hexo-and-GitHubPages/";
+    this.page.title = "使用Hexo + GitHub Pages搭建个人博客详解";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://crazypudding.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <meta name="msapplication-config" content="/images/browserconfig.xml">
+  <meta name="google-site-verification" content="v4WrTLM4pCJ7GqyDZCubQai7qb5ypHbCQYSA7cabnJA">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Dancing Script:300,300italic,400,400italic,700,700italic|Source Code Pro:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  
+  <link rel="stylesheet" href="/lib/animate-css/animate.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"crazypudding.github.io","root":"/","scheme":"Gemini","version":"8.0.0-rc.4","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":true,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"disqus","storage":true,"lazyload":false,"nav":null,"activeClass":"disqus"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}}};
+  </script>
+
+  <meta name="description" content="动画效果不仅能带来视觉上的享受，还能保证交互的连贯性，使整个 APP 一举一动看上去更加优雅美观。在 Android 系统中，动画主要有两大类，一类是 Animation，即针对单个对象做出的一些效果；另一类是 Transitin，即两个场景或者说两个 UI 界面切换时的效果，可以理解为转场效果。其中 Animation 又可以分为 View Animation、Property Animatio">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android 动画——View Animation">
+<meta property="og:url" content="http://crazypudding.github.io/2018/06/21/ViewAnimation/">
+<meta property="og:site_name" content="CrazyPudding&#39;s Note">
+<meta property="og:description" content="动画效果不仅能带来视觉上的享受，还能保证交互的连贯性，使整个 APP 一举一动看上去更加优雅美观。在 Android 系统中，动画主要有两大类，一类是 Animation，即针对单个对象做出的一些效果；另一类是 Transitin，即两个场景或者说两个 UI 界面切换时的效果，可以理解为转场效果。其中 Animation 又可以分为 View Animation、Property Animatio">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://img.crazypudding.com/animation/view-animation/animation-package-summary.png">
+<meta property="og:image" content="http://img.crazypudding.com/animation/view-animation/animation-lifecycle.png">
+<meta property="og:image" content="http://img.crazypudding.com/animation/view-animation/animation-set.gif">
+<meta property="og:image" content="http://img.crazypudding.com/animation/view-animation/accelerate.gif">
+<meta property="og:image" content="http://img.crazypudding.com/animation/view-animation/decelerate.gif">
+<meta property="og:image" content="http://img.crazypudding.com/animation/view-animation/accelerate-decelerate.gif">
+<meta property="og:image" content="http://img.crazypudding.com/animation/view-animation/anticipate.gif">
+<meta property="og:image" content="http://img.crazypudding.com/animation/view-animation/overshoot.gif">
+<meta property="og:image" content="http://img.crazypudding.com/animation/view-animation/anticipate-overshoot.gif">
+<meta property="og:image" content="http://img.crazypudding.com/animation/view-animation/bounce.gif">
+<meta property="og:image" content="http://img.crazypudding.com/animation/view-animation/cycle.gif">
+<meta property="og:image" content="http://img.crazypudding.com/animation/view-animation/linear.gif">
+<meta property="og:image" content="http://img.crazypudding.com/animation/view-animation/pathfx.jpg">
+<meta property="og:image" content="http://img.crazypudding.com/animation/view-animation/path-interpolators.gif">
+<meta property="og:image" content="http://img.crazypudding.com/animation/view-animation/layout-top-to-bottom.gif">
+<meta property="og:image" content="http://img.crazypudding.com/animation/view-animation/grid-layout-default.gif">
+<meta property="og:image" content="http://img.crazypudding.com/animation/view-animation/shake.gif">
+<meta property="og:image" content="http://img.crazypudding.com/animation/view-animation/translate.gif">
+<meta property="article:published_time" content="2018-06-21T06:10:00.000Z">
+<meta property="article:modified_time" content="2019-04-13T14:37:23.885Z">
+<meta property="article:author" content="Crazypudding">
+<meta property="article:tag" content="Android">
+<meta property="article:tag" content="Animation">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://img.crazypudding.com/animation/view-animation/animation-package-summary.png">
+
+<link rel="canonical" href="http://crazypudding.github.io/2018/06/21/ViewAnimation/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Android 动画——View Animation | CrazyPudding's Note</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-172930850-1"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'UA-172930850-1');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?3c0226d1e15c67d14d87c4d6771bfb82";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <main class="main">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+        <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+        <span class="toggle-line toggle-line-first"></span>
+        <span class="toggle-line toggle-line-middle"></span>
+        <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">CrazyPudding's Note</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#View-Animation-概览"><span class="nav-number">1.</span> <span class="nav-text">View Animation 概览</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-在-XML-中定义补间动画"><span class="nav-number">1.1.</span> <span class="nav-text">1.在 XML 中定义补间动画</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-在-Java-代码中定义补间动画"><span class="nav-number">1.2.</span> <span class="nav-text">2.在 Java 代码中定义补间动画</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#animation-包分析"><span class="nav-number">2.</span> <span class="nav-text">animation 包分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#abstract-class-Animation"><span class="nav-number">2.1.</span> <span class="nav-text">abstract class Animation</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#AlphaAnimation"><span class="nav-number">2.2.</span> <span class="nav-text">AlphaAnimation</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RotateAnimation"><span class="nav-number">2.3.</span> <span class="nav-text">RotateAnimation</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ScaleAnimation"><span class="nav-number">2.4.</span> <span class="nav-text">ScaleAnimation</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#TranslateAnimation"><span class="nav-number">2.5.</span> <span class="nav-text">TranslateAnimation</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#AnimationSet"><span class="nav-number">2.6.</span> <span class="nav-text">AnimationSet</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#AnimationUtils"><span class="nav-number">2.7.</span> <span class="nav-text">AnimationUtils</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Interpolator"><span class="nav-number">2.8.</span> <span class="nav-text">Interpolator</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#LayoutAnimationController"><span class="nav-number">2.9.</span> <span class="nav-text">LayoutAnimationController</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ViewAnimation-实战"><span class="nav-number">3.</span> <span class="nav-text">ViewAnimation 实战</span></a></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Crazypudding"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Crazypudding</p>
+  <div class="site-description" itemprop="description">有道无术术尚可求，有术无道止于术</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">12</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/crazypudding" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;crazypudding" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </header>
+
+      
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/crazypudding" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div id="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+      <div class="main-inner">
+        
+
+        <div class="content post posts-expand">
+          
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://crazypudding.github.io/2018/06/21/ViewAnimation/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Crazypudding">
+      <meta itemprop="description" content="有道无术术尚可求，有术无道止于术">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CrazyPudding's Note">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Android 动画——View Animation
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-06-21 14:10:00" itemprop="dateCreated datePublished" datetime="2018-06-21T14:10:00+08:00">2018-06-21</time>
+            </span>
+
+          
+            <span id="/2018/06/21/ViewAnimation/" class="post-meta-item leancloud_visitors" data-flag-title="Android 动画——View Animation" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2018/06/21/ViewAnimation/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/06/21/ViewAnimation/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>14k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>13 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>动画效果不仅能带来视觉上的享受，还能保证交互的连贯性，使整个 APP 一举一动看上去更加优雅美观。在 Android 系统中，动画主要有两大类，一类是 Animation，即针对单个对象做出的一些效果；另一类是 Transitin，即两个场景或者说两个 UI 界面切换时的效果，可以理解为转场效果。其中 Animation 又可以分为 View Animation、Property Animation、Drawable Animation 和 Physics-based Animation。</p>
+<p>在官方之前的文档中，View Animation 被分类为 Tween Animation(补间动画) 和 Frame-by-frame Animation(帧动画)，而随着 API 21 中 AnimatedVectorDrawable 以及 Support Library 25.3.0 中 DynamicAnimation 的引入，动画分类也发生了变化。Frame Animation 与 AnimatedVectorDrawable 被归类为 Drawable Animation，Tween Animation 即 View Animation，新增了 Physics-based Animation。本篇文章只记录 View Animation 相关的内容。</p>
+<a id="more"></a>
+
+<h2 id="View-Animation-概览"><a href="#View-Animation-概览" class="headerlink" title="View Animation 概览"></a>View Animation 概览</h2><blockquote>
+<p>先补充一下基础概念：</p>
+<p><strong>帧</strong>：最复古的动画表现形式应该是手翻书了，通过很多页相关联的图像快速翻动达到动画效果。手翻书中的某一页就可以理解为是一帧画面，一般来讲只要帧速率达到 60 FPS （frame per second 即每秒播放 60 帧）就能给人以连贯的动画感觉。<br><strong>补间动画</strong>：补间动画就是指定开始和结束时的两帧（称为关键帧），在动画执行的过程中其他帧由系统计算得出。比如指定一个 TextView 开始位置和结束位置，动画过程中系统根据时间计算出 TextView 在某个时刻应该处于哪个位置并绘制出来，连续的绘制刷新就造成动画效果。</p>
+</blockquote>
+<p>View Animation 是从 API 1 开始就有的一套动画系统，我们可以通过 View Animation 给 View 对象设置补间动画。补间动画可以处理 View 的一些简单转换，如位置、尺寸大小、旋转角度、透明度等，所有有关的类都在 <code>android.view.animation</code> 包下。补间动画有两种申明方式，一种是在 XML 文件中定义动画细节，在 Java 代码中简单调用，另外一种是完全在 Java 代码中定义并调用。一般都建议在 XML 文件中定义，这样定义可读性更高且可复用，具体区别在下文的例子中可以很明显的看出。</p>
+<p>补间动画相关的 XML 文件在 <code>res/anim/</code> 路径下，一个 xml 文件可定义一种单独的动画。补间动画的四种转换在 XML 语法中可分别用 <code>&lt;translate&gt;</code>,<code>&lt;scale&gt;</code>,<code>&lt;rotate&gt;</code>,<code>&lt;alpha&gt;</code> 四个标签定义，还可以使用 <code>&lt;set&gt;</code> 标签将不同的动画组合到一起执行。先看一个简单的例子感受一下，定义一个旋转 45° 的动画，在 XML 文件和 Java 代码中分别应该怎么做：</p>
+<h3 id="1-在-XML-中定义补间动画"><a href="#1-在-XML-中定义补间动画" class="headerlink" title="1.在 XML 中定义补间动画"></a>1.在 XML 中定义补间动画</h3><p>在 <code>/res/anim/</code> 目录下新建一个 xml 文件，命名为 <code>rotate.xml</code> 并定义：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">rotate</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:fromDegrees</span>=<span class="string">"0"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:toDegrees</span>=<span class="string">"45"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:duration</span>=<span class="string">"1000"</span>/&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>调用的时候在 Java 代码中这么做：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mIv = findViewById(R.id.img);</span><br><span class="line">Animation rotate = AnimationUtils.loadAnimation(<span class="keyword">this</span>, R.anim.rotate);</span><br><span class="line">mIv.startAnimation(rotate);</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-在-Java-代码中定义补间动画"><a href="#2-在-Java-代码中定义补间动画" class="headerlink" title="2.在 Java 代码中定义补间动画"></a>2.在 Java 代码中定义补间动画</h3><p>完全在 Java 代码中定义：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mIv = findViewById(R.id.img);</span><br><span class="line">RotateAnimation rotate = <span class="keyword">new</span> RotateAnimation(<span class="number">0</span>, <span class="number">45</span>);</span><br><span class="line">rotate.setDuration(<span class="number">1000</span>);</span><br><span class="line">mIv.startAnimation(rotate);</span><br></pre></td></tr></table></figure>
+
+<p>这两种方式定义的动画效果是一样的，但是可以感觉到，在 XML 文件中定义更为直观，而且可以在多个 Activity/Fragment 中重复利用，维护起来也更方便。</p>
+<h2 id="animation-包分析"><a href="#animation-包分析" class="headerlink" title="animation 包分析"></a>animation 包分析</h2><p>以上对补间动画有了一个简单的了解，既然关于补间动画的类在 <code>android.view.animation</code> 包下，要全面了解补间动画的知识当然要进入 <a href="https://developer.android.com/reference/android/view/animation/package-summary.html" target="_blank" rel="noopener">animation 包</a>下一探究竟。</p>
+<p>看到这么多类不要慌，对这些类进行整理之后再看其实很简单，以下为整理之后的关系：</p>
+<p><img src="http://img.crazypudding.com/animation/view-animation/animation-package-summary.png" alt="animation-package-summary"></p>
+<p>这样看起来舒服多了，其中真正核心的是 Animation 抽象类及其子类，通过其他类的加持可以实现一些骚操作。</p>
+<h3 id="abstract-class-Animation"><a href="#abstract-class-Animation" class="headerlink" title="abstract class Animation"></a>abstract class Animation</h3><p>这是所有补间动画类的抽象类，其中定义了补间动画的通用属性和行为。</p>
+<p>在 XML 文件中使用的 <code>&lt;rotate&gt;</code> 等标签是 Animation 子类的表示，不能直接在 XML 文件中定义 Animation 本身，但是 Animation 也提供了各动画子类通用的一些 XML 属性：</p>
+<table>
+<thead>
+<tr>
+<th>属性名称</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>android:detachWallpaper</td>
+<td>boolean，只对有 wallpaper 的 Window Animation 有效。表示 wallpaper 是否跟随 Window 一起动画</td>
+</tr>
+<tr>
+<td>android:duration</td>
+<td>long，动画持续时间，以毫秒为单位，不可为负数</td>
+</tr>
+<tr>
+<td>android:fillAfter</td>
+<td>boolean，动画结束后是否应用变换</td>
+</tr>
+<tr>
+<td>android:fillBefore</td>
+<td>boolean，是否在动画开始前应用第一帧的变换</td>
+</tr>
+<tr>
+<td>android:fillEnabled</td>
+<td>boolean，设置为 true 则应用 fillBefore 的值</td>
+</tr>
+<tr>
+<td>android:interpolator</td>
+<td>Interpolator，设置插值器</td>
+</tr>
+<tr>
+<td>android:repeatCount</td>
+<td>int，设置动画重复次数，默认为 0，-1 表示一直重复</td>
+</tr>
+<tr>
+<td>android:repeatMode</td>
+<td>enum，设置动画重复时是倒序(reverse)还是顺序(restart)，默认为 restart</td>
+</tr>
+<tr>
+<td>android:startOffset</td>
+<td>long，动画延迟执行的时间，以毫秒为单位</td>
+</tr>
+<tr>
+<td>android:zAdjustment</td>
+<td>enum，调整动画内容在 Z 轴的顺序，normal-&gt; 在当前顺序；bottom-&gt; 强制在最下层；top-&gt; 强制在最上层</td>
+</tr>
+</tbody></table>
+<p>以上每一个属性都有对应的 setter/getter 方法可调用。需要留意下三个 fill 相关的属性，先看一下一个动画完整的生命周期：</p>
+<p><img src="http://img.crazypudding.com/animation/view-animation/animation-lifecycle.png" alt="animation-lifecycle"></p>
+<p>整个动画的时间 = startOffset + runtime(duration)，当一个动画调用 start 方法开始时，此时为 startTime，经过 startOffset 后正式开始执行，startOffset 结束时会立即进入第一帧的状态。我们在定义动画时只要定义第一帧和最后一帧的状态。现在再看三个 fill 属性：</p>
+<ul>
+<li>fillAfter：表示动画结束后是否应用最后一帧的状态，true 表示应用，默认为 false，这个属性很简单，仅此而已</li>
+<li>fillBefore：表示动画在 startTime 之前是否应用第一帧的状态，默认为 true。fillBefore 的效果受 fillEnabled 的值影响，当 fillEnabled 为 true 时采用 fillBefore 的值，当 fillEnabled 为 false 时忽略 fillBefore 的值，效果同 fillBefore 为 true。</li>
+<li>fillEnabled：默认为 false，和 fillBefore 结合使用，不然会出现期望之外的效果</li>
+</ul>
+<p>这三个属性在使用时要多加注意，在第一帧的状态设置为 View 的当前状态时，fillBefore 等同于没有效果。</p>
+<p>接下来是几个常用方法：</p>
+<p>setInterpolator(Interpolator i)：为动画设置插值器。插值器后面会提到，是一个比较有意思的存在。<br>setAnimationListener(Animation.AnimationListener listener)：为动画设置监听器，监听动画发生的事件。<br>start()：开始动画，进入 startTime<br>cancel()：取消动画，会立刻将动画设置为最后一帧的状态并回调 AnimationListener 的 onAnimationEnd 方法。如果手动 cancel 的话，下次启动动画之前需要调用 reset() 方法将 Animation 重置为初始状态。</p>
+<p>内部接口 Animation.AnimationListener：当 Animation 设置了监听器后，发生相应的事件都会回调 AnimationListener 的方法，主要包含三个抽象方法–onAnimationEnd(Animation animation) 监听 animation 结束事件；onAnimationRepeat(Animation animation) 监听 animation 重复时的事件；onAnimationStart(Animation animation) 监听 animation 开始的事件。</p>
+<h3 id="AlphaAnimation"><a href="#AlphaAnimation" class="headerlink" title="AlphaAnimation"></a>AlphaAnimation</h3><p>AlphaAnimation 类用于控制 View 对象的透明度动画，完成透明度在 0-1 之间的动画效果，0.0 为透明，1.0 为不透明。对应的 XML 标签为 <code>&lt;alpha&gt;</code>，各属性分别为</p>
+<table>
+<thead>
+<tr>
+<th>属性名称</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>android:fromAlpha</td>
+<td>float，动画开始帧的透明度</td>
+</tr>
+<tr>
+<td>android:toAlpha</td>
+<td>float，动画结束帧的透明度</td>
+</tr>
+</tbody></table>
+<p>Animation 子类的应用也很简单，子类的特定属性指定关键帧的属性值，加上通用属性的配置，就可以在 XML 文件中定义一个 Animation：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">alpha</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:fromAlpha</span>=<span class="string">"1.0"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:toAlpha</span>=<span class="string">"0.3"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:duration</span>=<span class="string">"1000"</span>/&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>使用方法也很简单，和第一个简单的例子一样：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mIv = findViewById(R.id.img);</span><br><span class="line">Animation alphaAnim = AnimationUtils.loadAnimation(<span class="keyword">this</span>, R.anim.alpha);</span><br><span class="line">mIv.startAnimation(alphaAnim);</span><br></pre></td></tr></table></figure>
+
+<p>或者也可以这样：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">mIv = findViewById(R.id.img);</span><br><span class="line">Animation alphaAnim = AnimationUtils.loadAnimation(<span class="keyword">this</span>, R.anim.alpha);</span><br><span class="line">mIv.setAnimation(alphaAnim);</span><br><span class="line"><span class="comment">// 可以在适当的时候再开始动画</span></span><br><span class="line">alphaAnim.start();</span><br></pre></td></tr></table></figure>
+
+<p>当然也可以使用构造方法在 Java 代码中直接实例化一个 AlphaAnimation 对象（一开始有提到，这种方法不推荐），那么 AlphaAnimation 的构造方法有两个：</p>
+<p>AlphaAnimation(Context context, AttributeSet attrs)：这个构造方法就是通过 XML 定义时会调用的<br>AlphaAnimation(float fromAlpha, float toAlpha)：这个构造方法在 Java 代码中设置属性值来实例化对象</p>
+<p>Animation 的所有子类使用方法一致，所以后三个子类列出对应的属性即可。</p>
+<h3 id="RotateAnimation"><a href="#RotateAnimation" class="headerlink" title="RotateAnimation"></a>RotateAnimation</h3><p>RotateAnimation 类用于控制 View 对象在 X-Y 平面的旋转动画。默认以 View 的坐标系中 (0,0) 为旋转中心点，可自定义。对应的 XML 标签为 <code>&lt;rotate&gt;</code>，各属性为</p>
+<table>
+<thead>
+<tr>
+<th>属性名称</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>android:fromDegree</td>
+<td>float，动画开始帧的旋转角度，单位为°</td>
+</tr>
+<tr>
+<td>android:toDegree</td>
+<td>float，动画结束帧的旋转角度</td>
+</tr>
+<tr>
+<td>android:pivotX</td>
+<td>float/10%/10%p，旋转中心点的 X 轴坐标，坐标系为 View 自身坐标系。float 表示准确像素值，10% 表示相对 View 自身 10% 的宽度，10%p 表示相对父容器 10% 的宽度</td>
+</tr>
+<tr>
+<td>android:pivotY</td>
+<td>float/10%/10%p，旋转中心点的 Y 轴坐标，坐标系为 View 自身坐标系。float 表示准确像素值，10% 表示相对 View 自身 10% 的高度，10%p 表示相对父容器 10% 的高度</td>
+</tr>
+</tbody></table>
+<p>对构造方法感兴趣可以上官方文档查看。</p>
+<h3 id="ScaleAnimation"><a href="#ScaleAnimation" class="headerlink" title="ScaleAnimation"></a>ScaleAnimation</h3><p>ScaleAnimation 类用于控制 View 对象的缩放动画。默认缩放的中心点为 View 的坐标系 (0,0) 点，可自定义。对应的 XML 标签为 <code>&lt;scale&gt;</code>，各属性为</p>
+<table>
+<thead>
+<tr>
+<th>属性名称</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>android:fromXScale</td>
+<td>float，动画开始帧的 X 轴的缩放比，1.0 表示没有变化</td>
+</tr>
+<tr>
+<td>android:toXScale</td>
+<td>float，动画结束帧的 X 轴的缩放比，1.0 表示没有变化</td>
+</tr>
+<tr>
+<td>android:fromYScale</td>
+<td>float，动画开始帧的 Y 轴的缩放比，1.0 表示没有变化</td>
+</tr>
+<tr>
+<td>android:toYScale</td>
+<td>float，动画结束帧的 Y 轴的缩放比，1.0 表示没有变化</td>
+</tr>
+<tr>
+<td>android:pivotX</td>
+<td>float/10%/10%p，旋转中心点的 X 轴坐标，坐标系为 View 自身坐标系。float 表示准确像素值，10% 表示相对 View 自身 10% 的宽度，10%p 表示相对父容器 10% 的宽度</td>
+</tr>
+<tr>
+<td>android:pivotY</td>
+<td>float/10%/10%p，旋转中心点的 Y 轴坐标，坐标系为 View 自身坐标系。float 表示准确像素值，10% 表示相对 View 自身 10% 的高度，10%p 表示相对父容器 10% 的高度</td>
+</tr>
+</tbody></table>
+<h3 id="TranslateAnimation"><a href="#TranslateAnimation" class="headerlink" title="TranslateAnimation"></a>TranslateAnimation</h3><p>TranslationAnimation 类用于控制 View 对象的平移动画。对应 XML 标签为 <code>&lt;translate&gt;</code>，以下所有属性都可以使用 float/10%/10%p 三种格式的值，以 View 自身坐标系为参考系</p>
+<table>
+<thead>
+<tr>
+<th>属性名称</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>android:fromXDelta</td>
+<td>动画开始帧的 X 轴偏移</td>
+</tr>
+<tr>
+<td>android:toXDelta</td>
+<td>动画结束帧的 X 轴偏移</td>
+</tr>
+<tr>
+<td>android:fromYDelta</td>
+<td>动画开始帧的 Y 轴偏移</td>
+</tr>
+<tr>
+<td>android:toYDelta</td>
+<td>动画结束帧的 Y 轴偏移</td>
+</tr>
+</tbody></table>
+<h3 id="AnimationSet"><a href="#AnimationSet" class="headerlink" title="AnimationSet"></a>AnimationSet</h3><p>AnimationSet 类用于将多个 Animation 以 List<Animation> 的形式存储并组合成一个动画组。如果在 AnimationSet 设置了和其中单个 Animation 相同的属性值，AnimationSet 的值会覆盖 Animation 的值。</p>
+<p>AnimationSet 需要注意以下属性的不同行为：</p>
+<ul>
+<li>duration、repeatMode、fillBefore、fillAfter 等属性值将下发到个子项 Animation</li>
+<li>repeatCount、fillEnabled 将被 AnimationSet 忽略</li>
+<li>startOffset、shareInterpolator 应用于 AnimationSet 自身。</li>
+</ul>
+<p>AnimationSet 对应的 XML 标签为 <code>&lt;set&gt;</code>，各属性如下</p>
+<table>
+<thead>
+<tr>
+<th>属性名称</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>android:interpolator</td>
+<td>Interpolator，定义插值器</td>
+</tr>
+<tr>
+<td>android:shareInterpolator</td>
+<td>boolean，将所有子类设置为同一个插值器</td>
+</tr>
+</tbody></table>
+<p>AnimationSet 可以看作是由多个 Animation 组成的一个 Animation，通过设置单个 Animation 的属性值可以达到多个动画同时或按顺序执行的效果，例子如下：</p>
+<p>XML 文件–animation_set.xml：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">set</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">scale</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:duration</span>=<span class="string">"700"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:fillAfter</span>=<span class="string">"false"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:fromXScale</span>=<span class="string">"1.0"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:fromYScale</span>=<span class="string">"1.0"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:pivotX</span>=<span class="string">"50%"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:pivotY</span>=<span class="string">"50%"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:toXScale</span>=<span class="string">"1.4"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:toYScale</span>=<span class="string">"0.6"</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">set</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">scale</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:duration</span>=<span class="string">"400"</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:fillBefore</span>=<span class="string">"false"</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:fromXScale</span>=<span class="string">"1.4"</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:fromYScale</span>=<span class="string">"0.6"</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:pivotX</span>=<span class="string">"50%"</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:pivotY</span>=<span class="string">"50%"</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:startOffset</span>=<span class="string">"700"</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:toXScale</span>=<span class="string">"0.0"</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:toYScale</span>=<span class="string">"0.0"</span> /&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">rotate</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:duration</span>=<span class="string">"400"</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:fromDegrees</span>=<span class="string">"0"</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:pivotX</span>=<span class="string">"50%"</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:pivotY</span>=<span class="string">"50%"</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:startOffset</span>=<span class="string">"700"</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:toDegrees</span>=<span class="string">"-45"</span></span></span><br><span class="line"><span class="tag">            <span class="attr">android:toYScale</span>=<span class="string">"0.0"</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">set</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">set</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>Java 代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mIv = findViewById(R.id.img);</span><br><span class="line">Animation set = AnimationUtils.loadAnimation(<span class="keyword">this</span>, R.anim.animation_set);</span><br><span class="line">mIv.startAnimation(set);</span><br></pre></td></tr></table></figure>
+
+<p>效果如下：</p>
+<p><img src="http://img.crazypudding.com/animation/view-animation/animation-set.gif" alt="animation-set"></p>
+<h3 id="AnimationUtils"><a href="#AnimationUtils" class="headerlink" title="AnimationUtils"></a>AnimationUtils</h3><p>AnimationUtils 是一个封装好的工具类，借助它的静态方法可以很便利的载入动画对象。</p>
+<ul>
+<li>long currentAnimationTimeMillis()：返回当前的动画时间，这个时间用来设置 startTime。</li>
+<li>Animation loadAnimation(Context context, int id)：从资源文件中导入 Animation 对象。上面的例子已经用过了，很方便</li>
+<li>Interpolator loadInterpolator(Context context, int id)：从资源文件中导入 Interpolator 对象。这个 Interpolator 马上就来了…</li>
+<li>LayoutAnimationController loadLayoutAnimation(Context context, int id)：从资源文件中导入 LayoutAnimationController 对象。这个 LayoutAnimationController 也会在下面出现</li>
+<li>Animation makeInAnimation(Context c, boolean fromLeft)：创建一个入场动画，使用滑动和淡入淡出效果(就是 alpha 和 translate 属性结合使用的动画)，默认从右侧滑入，fromLeft 为 true 表示从左侧滑入</li>
+<li>Animation makeOutAnimation(Context c, boolean toRight)：创建一个出场动画，使用滑出和淡出效果，默认从左侧滑出，toRight 为 true 则从右侧滑出</li>
+<li>Animation makeChildBottomAnimation(Context c)：创建一个入场动画，使用上滑和淡入效果</li>
+</ul>
+<p>这些方法都很简单，都是一些辅助方法，写几行代码试一下就可以看到效果了。</p>
+<h3 id="Interpolator"><a href="#Interpolator" class="headerlink" title="Interpolator"></a>Interpolator</h3><p>终于到它了，上面说到 Interpolator 是一个很有意思的类，现在就来了解下它有趣之处在哪。</p>
+<p>Interpolator 中文名称插值器。插值是数学领域的一个名词，指通过一些已知离散点的取值估算出其他点的值，对专业解释感兴趣可以自行补充。插值器简单来说就是函数，在动画中表现为目标取值对于时间的函数，由于我们设置好了动画目标取值的范围（就是开始帧和结束帧的值）和时间范围（就是 duration），通过插值器这个函数，可以改变动画过程中目标取值相对时间的变化速率，再通俗点说，插值器可以使动画的目标取值非匀速变化，是实现一些复杂动画的关键。当然，自己实现一个插值器不难，但是刚开始还是有一种望而却步的感觉，所以 Android 系统已经很贴心的提供了很多插值器，足够日常使用了，等能够熟练使用自带的插值器再去自定义就不难了，本文并不涉及自定义插值器，毕竟贪多嚼不烂，目前了解自带的插值器效果即可。</p>
+<p>从源码里看，Interpolator 只是继承了 TimeInterpolator 接口，没有任何多余的代码。TimeInterpolator 只有一个 getInterpolation 方法，TimeInterpolator 是 API Level 11 才引入的新接口，与新的动画系统有关，此处不介绍，只要知道 Interpolator 只提供了一个 getInterpolator 方法（推断 API Level 11 之前，Interpolator 接口应该也是有这个方法的，新增接口后把方法交给了父接口，这个方法就是自定义插值器的关键），具体实现交由各个子类就可以了。Interpolator 有一个抽象实现–BaseInterpolator，BaseInterpolator 的方法也不用管，需要关注的是它的 10 个具体子类：</p>
+<ul>
+<li>AccelerateInterpolator：加速变化。可设置构造函数中的 factor 参数调整变化因子，默认为 1.0f</li>
+</ul>
+<p><img src="http://img.crazypudding.com/animation/view-animation/accelerate.gif" alt="accelerate"></p>
+<ul>
+<li>DecelerateInterpolator：减速变化。可设置构造函数中的 factor 参数调整变化因子，默认为 1.0f</li>
+</ul>
+<p><img src="http://img.crazypudding.com/animation/view-animation/decelerate.gif" alt="decelerate"></p>
+<ul>
+<li>AccelerateDecelerateInterpolator：前半段呈加速变化，后半段减速变化</li>
+</ul>
+<p><img src="http://img.crazypudding.com/animation/view-animation/accelerate-decelerate.gif" alt="accelerate-decelerate"></p>
+<ul>
+<li>AnticipateInterpolator：emm…开始时有一个回退效果，然后加速变化。可设置构造函数中的 tension 参数调整回弹系数，默认为 2.0f</li>
+</ul>
+<p><img src="http://img.crazypudding.com/animation/view-animation/anticipate.gif" alt="anticipate"></p>
+<ul>
+<li>OvershootInterpolator：emm…（跑太快）结束时有一个溢出效果，其他时间段相当于 DecelerateInterpolator。可设置构造函数中的 tension 参数调整回弹系数，默认为 2.0f</li>
+</ul>
+<p><img src="http://img.crazypudding.com/animation/view-animation/overshoot.gif" alt="overshoot"></p>
+<ul>
+<li>AnticipateOvershootInterpolator：上面两者的结合</li>
+</ul>
+<p><img src="http://img.crazypudding.com/animation/view-animation/anticipate-overshoot.gif" alt="anticipate-overshoot"></p>
+<ul>
+<li>BounceInterpolator：结束时有回弹效果，弹珠自由落体那种。。</li>
+</ul>
+<p><img src="http://img.crazypudding.com/animation/view-animation/bounce.gif" alt="bounce"></p>
+<ul>
+<li>CycleInterpolator：可根据 cycles 参数指定循环播放次数，一个来回为一个循环，cycles 默认为 1，看图体验，图中例子 cycles 为 2</li>
+</ul>
+<p><img src="http://img.crazypudding.com/animation/view-animation/cycle.gif" alt="cycle"></p>
+<ul>
+<li>LinearInterpolator：匀速变化</li>
+</ul>
+<p><img src="http://img.crazypudding.com/animation/view-animation/linear.gif" alt="linear"></p>
+<ul>
+<li>PathInterpolator：API 21 引入。可自定义 path 指定相应时刻的动画完成度。path 上点的横坐标表示时间完成度，纵坐标表示动画完成度，都按百分比计算。path 可以用函数 y = f(x) (0 &lt;= x &lt;= 1) 所绘制的曲线来表示。需要注意两点：同一个 x 值不能有两个或以上的 y 值与之对应；x 的值必须是从 0 - 1 的连续的值且每一个 x 值都有一个 y 值与之对应。关于 path 的要求可看下图：</li>
+</ul>
+<p><img src="http://img.crazypudding.com/animation/view-animation/pathfx.jpg" alt="pathfx"></p>
+<p>如定义 path 为：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Path path = <span class="keyword">new</span> Path();</span><br><span class="line">path.lineTo(<span class="number">0.25f</span>, <span class="number">0.25f</span>);</span><br><span class="line">path.moveTo(<span class="number">0.25f</span>, <span class="number">0.5f</span>);</span><br><span class="line">path.lineTo(<span class="number">1f</span>, <span class="number">1f</span>);</span><br></pre></td></tr></table></figure>
+
+<p>相应效果如下：</p>
+<p><img src="http://img.crazypudding.com/animation/view-animation/path-interpolators.gif" alt="path-interpolators"></p>
+<h3 id="LayoutAnimationController"><a href="#LayoutAnimationController" class="headerlink" title="LayoutAnimationController"></a>LayoutAnimationController</h3><p>LayoutAnimationController 主要用于控制 ViewGroup 中各个子 view 的动画播放时机。简单来说，当对一个 ViewGroup 设置 Animation 时，不做其他设置的情况下，ViewGroup 会作为一个整体开始执行这个 Animation，而 LayoutAnimationController 可将这个 Animation 分发给各个子 View 并设置各自的延迟时间播放顺序等，让它们独立执行。它的使用方式也有两种，XML 声明和 Java 代码直接编写，使用之前先了解相关属性，在 XML 中使用 <code>&lt;layoutAnimation&gt;</code> 标签：</p>
+<table>
+<thead>
+<tr>
+<th>属性名称</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>android:animation</td>
+<td>需要使用的动画</td>
+</tr>
+<tr>
+<td>android:animationOrder</td>
+<td>enum，子 View 动画执行顺序。normal-&gt;正常顺序；random-&gt;随机开始；reverse-&gt;倒序</td>
+</tr>
+<tr>
+<td>android:delay</td>
+<td>子 View 动画延迟系数。float 表示绝对倍数，也可用 10% 或 10%p 的形式表示，默认为 0.5</td>
+</tr>
+<tr>
+<td>android:interpolator</td>
+<td>为延迟时间设置插值器</td>
+</tr>
+</tbody></table>
+<p>每个属性都有对应的 setter/getter 方法。</p>
+<p>1.在 XML 中使用 LayoutAnimationController：</p>
+<p>先定义 layoutAnimation 文件 <code>layout_top_to_bottom.xml</code>：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">layoutAnimation</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:animation</span>=<span class="string">"@anim/slide_top_to_bottom"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:animationOrder</span>=<span class="string">"normal"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:delay</span>=<span class="string">"30%"</span> /&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>Animation 文件 <code>slide_top_to_bottom</code>：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">set</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">translate</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:duration</span>=<span class="string">"300"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:fromYDelta</span>=<span class="string">"-100%"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:toYDelta</span>=<span class="string">"0"</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">alpha</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:duration</span>=<span class="string">"200"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:fromAlpha</span>=<span class="string">"0.0"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:toAlpha</span>=<span class="string">"1.0"</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">set</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>在布局文件中目标 ViewGroup 节点加入 <code>android:layoutAnimation=&quot;@anim/layout_top_to_bottom&quot;</code> 属性即可使用。效果如下：</p>
+<p><img src="http://img.crazypudding.com/animation/view-animation/layout-top-to-bottom.gif" alt="layout-top-to-bottom"></p>
+<p>2.在 Java 代码中使用 LayoutAnimationController：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">AnimationSet set = <span class="keyword">new</span> AnimationSet(<span class="keyword">false</span>);</span><br><span class="line"></span><br><span class="line">Animation animation = <span class="keyword">new</span> AlphaAnimation(<span class="number">0.0f</span>, <span class="number">1.0f</span>);</span><br><span class="line">animation.setDuration(<span class="number">200</span>);</span><br><span class="line">set.addAnimation(animation);</span><br><span class="line"></span><br><span class="line">animation = <span class="keyword">new</span> TranslateAnimation(Animation.RELATIVE_TO_SELF, <span class="number">0.0f</span>, Animation.RELATIVE_TO_SELF, <span class="number">0.0f</span>,</span><br><span class="line">        Animation.RELATIVE_TO_SELF, -<span class="number">1.0f</span>, Animation.RELATIVE_TO_SELF, <span class="number">0.0f</span>);</span><br><span class="line">animation.setDuration(<span class="number">300</span>);</span><br><span class="line">set.addAnimation(animation);</span><br><span class="line"></span><br><span class="line">LayoutAnimationController controller = <span class="keyword">new</span> LayoutAnimationController(set, <span class="number">0.3f</span>);</span><br><span class="line">ListView listView = getListView();</span><br><span class="line">listView.setLayoutAnimation(controller);</span><br></pre></td></tr></table></figure>
+
+<p>效果就不贴图了，这两种方法各有利弊，使用时自由选择，当然也可以结合，定义 Animation 由 XML 负责，Java 代码负责设置调用。</p>
+<p>LayoutAnimationController 有一个子类–GridLayoutAnimationController，GridLayoutAnimationController 和 LayoutAnimationController 作用是一样的，从名字可以看出，GridLayoutAnimationController 是控制 GridView 结构中子 View 的动画的，而且还可以控制执行方向，因此它也新增属于自己的属性，在 XML 中使用 <code>&lt;gridLayoutAnimation&gt;</code>：</p>
+<table>
+<thead>
+<tr>
+<th>属性名称</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>android:columnDelay</td>
+<td>float/%，一列子 View 之间的动画延迟系数，默认为 0.5</td>
+</tr>
+<tr>
+<td>android:rowDelay</td>
+<td>float/%，一行子 View 之间的动画延迟系数，默认为 0.5</td>
+</tr>
+<tr>
+<td>android:direction</td>
+<td>enum，动画顺序执行的方向，可以指定多个值。bottom_to_top(2)–&gt;从下往上按行逐个执行；left_to_right(0)–&gt;从左往右按列逐个执行；right_to_left(1)–&gt;从右往左按列逐个执行；top_to_bottom(0)–&gt;从上往下按行逐个执行</td>
+</tr>
+<tr>
+<td>android:directionPriority</td>
+<td>enum，行列执行的优先性。column–&gt;列优先；row–&gt;行优先；none–&gt;行列同时</td>
+</tr>
+</tbody></table>
+<p>GridLayoutAnimationController 默认是行列同时逐个子 View 从左往右，从上往下执行动画，对应的参数值为：direction = 0, directionPriority = none, columnDelay = 0.5f, rowDelay = 0.5f；如下图：</p>
+<p><img src="http://img.crazypudding.com/animation/view-animation/grid-layout-default.gif" alt="grid-layout-default"></p>
+<p>direction 和 directionPriority 两个属性也不难，动手设置看个一两遍就理解了~</p>
+<h2 id="ViewAnimation-实战"><a href="#ViewAnimation-实战" class="headerlink" title="ViewAnimation 实战"></a>ViewAnimation 实战</h2><p>View Animation 相关的东西虽然有点多，但是并不复杂，挨个敲一遍都很好理解。再实现几个简单的小例子熟悉一下，先看第一个效果：</p>
+<p><img src="http://img.crazypudding.com/animation/view-animation/shake.gif" alt="shake"></p>
+<p>以下是动画的核心代码：</p>
+<p>XML 文件 <code>shake</code>：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">translate</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:duration</span>=<span class="string">"800"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:fromXDelta</span>=<span class="string">"0"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">android:toXDelta</span>=<span class="string">"10"</span> /&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>Java 代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 载入 Animation 实例</span></span><br><span class="line">Animation shakeAnimation = AnimationUtils.loadAnimation(ShakeAnimation.<span class="keyword">this</span>, R.anim.shake);</span><br><span class="line"><span class="comment">// 设置插值器 CycleInterpolator 达到晃动的效果</span></span><br><span class="line">shakeAnimation.setInterpolator(<span class="keyword">new</span> CycleInterpolator(<span class="number">6</span>));</span><br><span class="line"><span class="comment">// 开始动画</span></span><br><span class="line">target.startAnimation(shakeAnimation);</span><br></pre></td></tr></table></figure>
+
+<p>没了，，就这么简单！！<a href="https://github.com/CrazyPudding/AnimationDemo" target="_blank" rel="noopener">完整代码在此</a></p>
+<p>那…再来看一个简单的例子，比上一个还简单，只是给一个 Button 平移的效果：</p>
+<p><img src="http://img.crazypudding.com/animation/view-animation/translate.gif" alt="translate"></p>
+<p>这个例子简单到不用上代码就知道怎么写了，不过上图的动画发生了一些奇怪的事情值得关注，Button 在平移之前点击会增加计数，平移之后再点击缺什么都没发生，反而点击 Button 平移之前的位置触发了它的点击事件。emmm…好好想想是怎么回事…</p>
+<p>这就是 View Animation 的弊端了，它的本质只是刷新了 View 的绘制区域，View 对象并没有一起作动画，所以说 View Animation 可以理解为障眼法，绘制区域变了，本质还在原地。这么看来，要成功的将对象本身和绘制区域绑定到一起，需要借助 AnimationListener 的力量了，在 onAnimationEnd 方法将 View 对象的参数进行相应的变化：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">animation.setAnimationListener(<span class="keyword">new</span> Animation.AnimationListener() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onAnimationStart</span><span class="params">(Animation animation)</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onAnimationEnd</span><span class="params">(Animation animation)</span> </span>&#123;</span><br><span class="line">    mBtnClick.clearAnimation();</span><br><span class="line">    <span class="keyword">int</span> translateX = container.getWidth() / <span class="number">2</span>;</span><br><span class="line">    <span class="keyword">int</span> translateY = container.getHeight() / <span class="number">2</span>;</span><br><span class="line">    mBtnClick.setTranslationX(translateX);</span><br><span class="line">    mBtnClick.setTranslationY(translateY);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onAnimationRepeat</span><span class="params">(Animation animation)</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>这样做确实可以解决问题，但是这么做很明显，最基础的就是要做适配，而且这么做确实麻烦，一个稍微复杂点的动画绝对能把自己做到怀疑人生…所以啊，Google 在 Android 3.0 引入了一套新的动画系统–Property Animation，也就是常听到的属性动画，它从本质上解决了View Animation 存的的问题，并且功能及其强大，可以说是实实在在的动画。如果感兴趣的话就期待《Android 动画》的下一篇吧~</p>
+<p>最后，本文为学习 Android 动画系统过程中所作的总结，如果不当之处欢迎指出~奉上本文源码：<a href="https://github.com/CrazyPudding/AnimationDemo" target="_blank" rel="noopener">传送门</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Android/" rel="tag"># Android</a>
+              <a href="/tags/Animation/" rel="tag"># Animation</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/04/06/rxjava-oparetion-transform/" rel="prev" title="RXJava操作符——转换类">
+      <i class="fa fa-chevron-left"></i> RXJava操作符——转换类
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/04/16/learning-jvm-build-my-openjdk/" rel="next" title="JVM 之旅——编译 OpenJDK">
+      JVM 之旅——编译 OpenJDK <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+        </div>
+        
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="http://www.beian.miit.gov.cn/" rel="noopener" target="_blank">赣ICP备16009806号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Crazypudding</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">69k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">1:03</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              leancloudSelector(url).innerText = 'Counter not initialized! More info at console err msg.';
+              console.error('ATTENTION! LeanCloud counter has security bug, see how to solve it here: https://github.com/theme-next/hexo-leancloud-counter-security. \n However, you can still use LeanCloud without security, by setting `security` option to `false`.');
+            
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"d6IWzX7FjgQks0Y7UioDD24l-gzGzoHsz","app_key":"GMrkaVwqnkjwRbJGmzs42wHK","server_url":null,"security":true};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/medium-zoom@1/dist/medium-zoom.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://crazypudding.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  var disqus_config = function() {
+    this.page.url = "http://crazypudding.github.io/2018/06/21/ViewAnimation/";
+    this.page.identifier = "2018/06/21/ViewAnimation/";
+    this.page.title = "Android 动画——View Animation";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://crazypudding.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>

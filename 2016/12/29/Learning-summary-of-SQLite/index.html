@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <meta name="msapplication-config" content="/images/browserconfig.xml">
+  <meta name="google-site-verification" content="v4WrTLM4pCJ7GqyDZCubQai7qb5ypHbCQYSA7cabnJA">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Dancing Script:300,300italic,400,400italic,700,700italic|Source Code Pro:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  
+  <link rel="stylesheet" href="/lib/animate-css/animate.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"crazypudding.github.io","root":"/","scheme":"Gemini","version":"8.0.0-rc.4","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":true,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"disqus","storage":true,"lazyload":false,"nav":null,"activeClass":"disqus"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}}};
+  </script>
+
+  <meta name="description" content="Android中的存储问题，是每个Android开发者都需要面对的一个问题，而且，数据存储应该是一个关键，网上很多说Android有五大存储方式，其中包括SharedPreference、File、Content Provider、SQLite数据库存储和网络存储，不过看API指南中的数据存储并没有包括Content Provider，而且按文档所说的，严格意义上来讲，Content Provid">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SQLite基础学习总结">
+<meta property="og:url" content="http://crazypudding.github.io/2016/12/29/Learning-summary-of-SQLite/">
+<meta property="og:site_name" content="CrazyPudding&#39;s Note">
+<meta property="og:description" content="Android中的存储问题，是每个Android开发者都需要面对的一个问题，而且，数据存储应该是一个关键，网上很多说Android有五大存储方式，其中包括SharedPreference、File、Content Provider、SQLite数据库存储和网络存储，不过看API指南中的数据存储并没有包括Content Provider，而且按文档所说的，严格意义上来讲，Content Provid">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://img.crazypudding.com/different-type.png">
+<meta property="og:image" content="http://img.crazypudding.com/databases.png">
+<meta property="og:image" content="http://img.crazypudding.com/tables.png">
+<meta property="og:image" content="http://img.crazypudding.com/table-company.png">
+<meta property="og:image" content="http://img.crazypudding.com/select.png">
+<meta property="og:image" content="http://img.crazypudding.com/mode-column.png">
+<meta property="og:image" content="http://img.crazypudding.com/headers-on.png">
+<meta property="og:image" content="http://img.crazypudding.com/select-where.png">
+<meta property="og:image" content="http://img.crazypudding.com/update.png">
+<meta property="og:image" content="http://img.crazypudding.com/delete.png">
+<meta property="og:image" content="http://img.crazypudding.com/attach.png">
+<meta property="og:image" content="http://img.crazypudding.com/attach-create.png">
+<meta property="og:image" content="http://img.crazypudding.com/create-2.png">
+<meta property="og:image" content="http://img.crazypudding.com/detach.png">
+<meta property="og:image" content="http://img.crazypudding.com/check-table.png">
+<meta property="og:image" content="http://img.crazypudding.com/datas.png">
+<meta property="article:published_time" content="2016-12-29T14:10:37.000Z">
+<meta property="article:modified_time" content="2019-04-13T14:41:04.384Z">
+<meta property="article:author" content="Crazypudding">
+<meta property="article:tag" content="Android">
+<meta property="article:tag" content="Learning Notes">
+<meta property="article:tag" content="SQLite">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://img.crazypudding.com/different-type.png">
+
+<link rel="canonical" href="http://crazypudding.github.io/2016/12/29/Learning-summary-of-SQLite/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>SQLite基础学习总结 | CrazyPudding's Note</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-172930850-1"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'UA-172930850-1');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?3c0226d1e15c67d14d87c4d6771bfb82";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <main class="main">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+        <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+        <span class="toggle-line toggle-line-first"></span>
+        <span class="toggle-line toggle-line-middle"></span>
+        <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">CrazyPudding's Note</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#SQlite是什么"><span class="nav-number">1.</span> <span class="nav-text">SQlite是什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#安装SQLite"><span class="nav-number">2.</span> <span class="nav-text">安装SQLite</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SQLite的命令和语法"><span class="nav-number">3.</span> <span class="nav-text">SQLite的命令和语法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SQLite存储数据的形式和数据类型"><span class="nav-number">4.</span> <span class="nav-text">SQLite存储数据的形式和数据类型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SQLite基本操作"><span class="nav-number">5.</span> <span class="nav-text">SQLite基本操作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#创建数据库"><span class="nav-number">5.1.</span> <span class="nav-text">创建数据库</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建表"><span class="nav-number">5.2.</span> <span class="nav-text">创建表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#增-INSERT语句"><span class="nav-number">5.3.</span> <span class="nav-text">增-INSERT语句</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#查-SELECT语句"><span class="nav-number">5.4.</span> <span class="nav-text">查-SELECT语句</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#改-UPDATE语句"><span class="nav-number">5.5.</span> <span class="nav-text">改-UPDATE语句</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#删-DELETE语句"><span class="nav-number">5.6.</span> <span class="nav-text">删-DELETE语句</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#补充内容"><span class="nav-number">6.</span> <span class="nav-text">补充内容</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#多数据库操作"><span class="nav-number">6.1.</span> <span class="nav-text">多数据库操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#多表操作-INNER-JOIN"><span class="nav-number">6.2.</span> <span class="nav-text">多表操作(INNER JOIN)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#数据库注入问题"><span class="nav-number">6.3.</span> <span class="nav-text">数据库注入问题</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">7.</span> <span class="nav-text">总结</span></a></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Crazypudding"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Crazypudding</p>
+  <div class="site-description" itemprop="description">有道无术术尚可求，有术无道止于术</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">12</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/crazypudding" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;crazypudding" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </header>
+
+      
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/crazypudding" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div id="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+      <div class="main-inner">
+        
+
+        <div class="content post posts-expand">
+          
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://crazypudding.github.io/2016/12/29/Learning-summary-of-SQLite/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Crazypudding">
+      <meta itemprop="description" content="有道无术术尚可求，有术无道止于术">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CrazyPudding's Note">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          SQLite基础学习总结
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-12-29 22:10:37" itemprop="dateCreated datePublished" datetime="2016-12-29T22:10:37+08:00">2016-12-29</time>
+            </span>
+
+          
+            <span id="/2016/12/29/Learning-summary-of-SQLite/" class="post-meta-item leancloud_visitors" data-flag-title="SQLite基础学习总结" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2016/12/29/Learning-summary-of-SQLite/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2016/12/29/Learning-summary-of-SQLite/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>6.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>6 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Android中的存储问题，是每个Android开发者都需要面对的一个问题，而且，数据存储应该是一个关键，网上很多说Android有五大存储方式，其中包括SharedPreference、File、Content Provider、SQLite数据库存储和网络存储，不过看API指南中的数据存储并没有包括Content Provider，而且按文档所说的，严格意义上来讲，Content Provider只是用于管理应用的数据访问权限的，是Android的组件之一。当然这不是本文的重点，重点是，Android的存储方式中包括了SQLite数据库存储，所以在学习了SQLite的相关内容之后，记下我认为有必要的内容作为总结，其他的语法语句都可以在网上搜到。</p>
+<a id="more"></a>
+
+<h2 id="SQlite是什么"><a href="#SQlite是什么" class="headerlink" title="SQlite是什么"></a>SQlite是什么</h2><p>简单来讲，SQLite是一款数据库，可以帮助用户存储和管理一些数据。它是用C语言实现的一个开源的嵌入式的关系数据库管理系统。所谓嵌入式，就是说SQLite嵌入到应用程序中，不需要再去进行服务器的配置就可以使用。Android在运行时也集成了SQLite，每个Android的应用程序都可以使用SQLite数据库来管理数据，如果Android应用有用到SQLite数据库的话，可以在路径<code>data/data/{packagename}/</code>下找到。</p>
+<p>SQLite是一款轻量级的数据库，清到不需要一个单独的服务器进程或操作系统，清到在完全配置时容量小于400kb，但是SQLite功能也很完善，基本能满足普通的需求，支持SQL92标准的大多数查询语言的功能，而且能跨平台运行。当然SQLite也有一定的局限性，对于网络数据存储、大数据量以及并发操作还是需要服务器数据库来助力的。</p>
+<h2 id="安装SQLite"><a href="#安装SQLite" class="headerlink" title="安装SQLite"></a>安装SQLite</h2><p>由于SQLite是零配置的，所以安装过程相当简单，甚至在Linux和Mac中一般都会默认是预装的，可以通过终端输入<code>sqlite3</code>进行验证，如果没有的话，和Windows一样，到<a href="https://sqlite.org/download.html" target="_blank" rel="noopener">官网下载页面</a>下载相对应的文件进行操作，Windows的话最好配置下Path环境变量，方便日后操作调用。最终通过验证指令就可以看到SQLite 的版本信息了。</p>
+<h2 id="SQLite的命令和语法"><a href="#SQLite的命令和语法" class="headerlink" title="SQLite的命令和语法"></a>SQLite的命令和语法</h2><p>操作SQLite的指令有两种，一种是SQLite命令，另一种是SQLite语法。SQLite命令又称为点命令，一般来讲以<code>.</code>开头(也有像<code>sqlite3</code>这种例外的命令)，而且不以分号(<code>;</code>)结束，用于对数据库系统(即SQLite程序)进行管理设置；SQLite语法每一句都以分号(<code>;</code>)结束，是对数据库文件的一种操作。SQLite语法根据操作性质可以分为以下几种：</p>
+<p>DDL-数据定义语言：包括CREATE(创建一个新的表，一个表的视图，或者数据库中的其他对象)、ALTER(修改数据库中的某个已有的数据库对象，比如一个表)、DROP(删除整个表，或者表的视图，或者数据库中的其他对象，不能删除数据库)</p>
+<p>DML-数据操作语言：包括INSERT(创建一条记录)、UPDATE(修改记录)、DELETE(删除记录)</p>
+<p>DQL-数据查询语言：SELECT(从一个或多个表中检索某些记录)</p>
+<blockquote>
+<p>记录是指插入到数据库中的值<br>另：SQLite对于大小写不敏感，除了特殊指令<code>GLOB</code>外，其他不区分大小写，但是语句一般都会大写</p>
+</blockquote>
+<h2 id="SQLite存储数据的形式和数据类型"><a href="#SQLite存储数据的形式和数据类型" class="headerlink" title="SQLite存储数据的形式和数据类型"></a>SQLite存储数据的形式和数据类型</h2><p>SQLite中存储数据的形式有点类似于EXCEL，在EXCEL中每一个xls文件里都包含有多个sheet表，而在SQLite中，则是<code>database</code>和<code>table</code>的概念，<code>database</code>就相当于xls文件，而<code>table</code>则相当于sheet表。</p>
+<p>每一个table也是以表格的形式来展示数据的，以列为基准，每新增一组数据就增加一行。在数据库中，每一列中的数据称为一个字段，每一行称为一条记录。原则上讲，在创建table时第一条记录的字段会定义它所处的一列中字段的属性，如数据类型等，也就是说，table中的每一列的数据类型都应该是相同的。但是由于SQLite的数据类型是弱类型，可以在某一列中插入数据类型不同于其他记录值的记录值。比如创建时定义第一列为INTEGER类型，当你往第一列插入记录时，如果不是INTEGER类型的数据，SQLite会尝试将其转换为INTEGER类型，如果转换失败，会直接将这个数据以其原本的类型插入到第一列。也就是说，可以在定义为整数型的列中插入字符类型的数据，并且它的类型不被强制改变。如下图中第三行中的数据就与同列其他数据的类型不相同：</p>
+<p><img src="http://img.crazypudding.com/different-type.png" alt="different-type"></p>
+<h2 id="SQLite基本操作"><a href="#SQLite基本操作" class="headerlink" title="SQLite基本操作"></a>SQLite基本操作</h2><p>SQLite在Android应用的中操作基本就是增删改查四类。在此之前需要创建数据库和表。</p>
+<h3 id="创建数据库"><a href="#创建数据库" class="headerlink" title="创建数据库"></a>创建数据库</h3><p>SQLite中的<code>sqlite3</code>命令用来打开或创建新的数据库。其基本语法如下：</p>
+<blockquote>
+<p>$sqlite3 DatabaseName.db</p>
+</blockquote>
+<p>如果<code>DatabaseName.db</code>文件存在则直接打开，不存在则新建并打开。<code>.db</code>后缀可以不加，但为了识别方便，一般都会加上。</p>
+<p>示例如下，创建一个新的数据库<code>testDB.db</code>：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$sqlite3 testDB.db</span><br><span class="line">SQLite version 3.15.1 2016-11-04 12:08:49</span><br><span class="line">Enter ".help<span class="string">" for usage hints.</span></span><br><span class="line"><span class="string">sqlite&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>每执行完一句指令都会在最后出现一个<code>sqlite&gt;</code>提示符，创建完之后可以使用<code>.databases</code>来查询现有的数据库：</p>
+<p><img src="http://img.crazypudding.com/databases.png" alt="databases"></p>
+<blockquote>
+<p>退出SQLite程序的指令为<code>.quit</code></p>
+</blockquote>
+<h3 id="创建表"><a href="#创建表" class="headerlink" title="创建表"></a>创建表</h3><p>创建表的语句为<code>CREATE TABLE</code>，其基本语法如下：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> database_name.table_name(</span><br><span class="line">    column1 datatype PRIMARY <span class="keyword">KEY</span> AUTOINCREMENT,</span><br><span class="line">    column2 datatype,</span><br><span class="line">    column3 datatype,</span><br><span class="line">    ......</span><br><span class="line">    columnN datatype);</span><br></pre></td></tr></table></figure>
+
+<p><em>database_name.table_name</em>中的database_name可省略，table_name是表的唯一标识<br><em>column1、column2</em>等这些是第一条记录中字段的名称，可以简单理解为表头，一般大写。SQLite指令对大小写不敏感，但是插入到表中的值会保持和输入的状态一致<br><em>datatype</em>是指该列的数据类型，一般大写<br><em>PRIMARY KEY</em>指出这一列是表的主键，是用来唯一标识表中记录的关键，一旦指出了PRIMARY KEY，就说明这一列当中的记录具有唯一性，不能重复，可以根据主键定位到具体的行，在Android应用中一般指<code>_id</code>，与AUTOINCREMENT结合使用<br><em>AUTOINCREMENT</em>是自增长的意思，即使不设置值也会对上一行的值自动增加1，这个约束只对整数型有效</p>
+<p>示例如下，创建一个表COMPANY，增加五列_id、NAME、AGE、ADDRESS、SALARY：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">sqlite&gt; CREATE TABLE COMPANY(</span><br><span class="line">   ...&gt; _id INTEGER PRIMARY KEY AUTOINCREMENT,</span><br><span class="line">   ...&gt; NAME TEXT,</span><br><span class="line">   ...&gt; AGE INTEGER,</span><br><span class="line">   ...&gt; ADDRESS TEXT,</span><br><span class="line">   ...&gt; SALARY REAL);</span><br><span class="line">sqlite&gt;</span><br></pre></td></tr></table></figure>
+
+<p>创建完成可以用<code>.tables</code>命令查询数据库中的表：</p>
+<p><img src="http://img.crazypudding.com/tables.png" alt="tables"></p>
+<p>在dos或终端的界面可以用<code>.schema</code>命令得到表的完整信息，输出的是建表时输入的语句</p>
+<h3 id="增-INSERT语句"><a href="#增-INSERT语句" class="headerlink" title="增-INSERT语句"></a>增-INSERT语句</h3><p><code>INSERT</code>顾名思义就是往表中添加数据行，其基本语法如下：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">INSERT</span> <span class="keyword">INTO</span> table_name (column1, column2, ..., columnN)</span><br><span class="line">    <span class="keyword">VALUES</span> (value1, value2, ..., valueN);</span><br></pre></td></tr></table></figure>
+
+<p><em>column</em>指的是列的名称，可以省略<br><em>value</em>指的是需要插入到表中的数据，与列出的column一一对应，当column省略时，value需要与完整的列名一一对应</p>
+<p>示例如下，往表中添加记录：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sqlite&gt; INSERT INTO COMPANY(_id, NAME, AGE, ADDRESS, SALARY)</span><br><span class="line">   ...&gt; VALUES (1, &#39;Paul&#39;, 32, &#39;California&#39;, 20000);</span><br><span class="line">sqlite&gt;</span><br></pre></td></tr></table></figure>
+
+<p>也可以省略column：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sqlite&gt; INSERT INTO COMPANY VALUES (2, &#39;Allen&#39;, 25, &#39;Texas&#39;, 15000);</span><br><span class="line">sqlite&gt;</span><br></pre></td></tr></table></figure>
+
+<p>或者省略自增长的主键_id：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sqlite&gt; INSERT INTO COMPANY (NAME, AGE, ADDRESS, SALARY)</span><br><span class="line">   ...&gt; VALUES (&#39;Teddy&#39;, 23, &#39;Norway&#39;, 20000);</span><br><span class="line">sqlite&gt;</span><br></pre></td></tr></table></figure>
+
+<p>最终结果如下：</p>
+<p><img src="http://img.crazypudding.com/table-company.png" alt="table-company"></p>
+<p>可以看到，每一行的数据都完整的记录到表中了，显示表中记录的语句就是 <strong>查</strong></p>
+<h3 id="查-SELECT语句"><a href="#查-SELECT语句" class="headerlink" title="查-SELECT语句"></a>查-SELECT语句</h3><p><code>SELECT</code>语句可以查询并列出表中的记录值，其基本语法如下：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> column1, column2, columnN <span class="keyword">FROM</span> table_name;</span><br></pre></td></tr></table></figure>
+
+<p>其中多个column可以用<code>*</code>代替表示查询所有列</p>
+<p>示例查询表中第一列：</p>
+<p><img src="http://img.crazypudding.com/select.png" alt="select"></p>
+<p>现在默认的输出格式是list，对于阅读不是很友好，可以使用<code>.mode</code>和<code>.headers</code>来格式化输出：</p>
+<p><code>.mode column</code>可以设置为按列输出：</p>
+<p><img src="http://img.crazypudding.com/mode-column.png" alt="mode-column"></p>
+<p><code>.headers on</code>可以设置显示表头，off则不显示表头,在设置了mode的基础上设置：</p>
+<p><img src="http://img.crazypudding.com/headers-on.png" alt="headers-on"></p>
+<p><code>SELECT</code>语句可以与<code>WHERE</code>子句一起用来进行更小范围的查询，WHERE指明了查找范围，如查找_id为3的行的相关记录：</p>
+<p><img src="http://img.crazypudding.com/select-where.png" alt="select-where"></p>
+<h3 id="改-UPDATE语句"><a href="#改-UPDATE语句" class="headerlink" title="改-UPDATE语句"></a>改-UPDATE语句</h3><p><code>UPDATE</code>用来修改表中的记录，看名字也知道是更新。基本语法如下：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">UPDATE</span> table_name</span><br><span class="line"><span class="keyword">SET</span> column1 = value1, column2 = value2, ...., columnN = valueN</span><br><span class="line"><span class="keyword">WHERE</span> [condition];</span><br></pre></td></tr></table></figure>
+
+<p>示例如下，更新_id为2的AGE：</p>
+<p><img src="http://img.crazypudding.com/update.png" alt="update"></p>
+<h3 id="删-DELETE语句"><a href="#删-DELETE语句" class="headerlink" title="删-DELETE语句"></a>删-DELETE语句</h3><p><code>DELETE</code>用来删除整行记录，其基本语法如下：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">DELETE</span> <span class="keyword">FROM</span> table_name</span><br><span class="line"><span class="keyword">WHERE</span> [condition];</span><br></pre></td></tr></table></figure>
+
+<p>示例如下，删除_id为2的记录：</p>
+<p><img src="http://img.crazypudding.com/delete.png" alt="delete"></p>
+<p>如果不指定WHERE子句，则表示清空表中所有记录，但是表依然存在，还有一个<code>DROP</code>语句可以删除表：<code>DROP TABLE table_name</code></p>
+<h2 id="补充内容"><a href="#补充内容" class="headerlink" title="补充内容"></a>补充内容</h2><p>基本的增删改查如上所述，但是有时候一张表不能满足需求，会产生多张表甚至多个数据库，这时候就需要多重操作了。</p>
+<h3 id="多数据库操作"><a href="#多数据库操作" class="headerlink" title="多数据库操作"></a>多数据库操作</h3><p>有时候会有很多个数据库，按照常规步骤，想要对另外一个数据库进行操作，先要quit出当前的数据库再重新进入下一个数据库，这样就挺麻烦的，而且有时候会需要从这个数据库中备份数据放到另一个数据库，常规的步骤实现就麻烦了，这时SQLite给我们提供了附加数据库这一功能，也就是<code>ATTACH DATABASE</code></p>
+<p>附加数据库可以支持我们在当前的数据库中对另外的数据库进行操作，只需要给需要附加操作的数据库添加一个别名就行了，基本语法如下：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ATTACH DATABASE 'Database2' As 'Alias-Name';</span><br></pre></td></tr></table></figure>
+
+<p>要注意其中的符号不能少，<code>Database2</code>只需要附加进来进行操作的数据库，<code>Alias-Name</code>是它在当前环境下的名称，即别名。示例如下：</p>
+<p><img src="http://img.crazypudding.com/attach.png" alt="attach"></p>
+<p>当我使用了ATTACH语句时，会将Database2也就是图中的testDB.db以别名tst在当前界面被操作。如果Database2在ATTAHCH之前不存在则会新建一个数据库并命名为Database2。这时查看当前的数据库会发现有两个，一个是之前的testDB.db,一个是testDB2.db。现在就可以同时对两个数据库进行操作了，如果是对当前数据库操作的话和平常一样，如果是对附加进来的testDB2.db进行操作则需要加上数据库名称，就是指定的别名tst。</p>
+<p>示例如下，在当前数据库下对testDB2.db新建一个表并命名为TEST_TABLE，在这里需要指定表名为tst.TEST_TABLE：</p>
+<p><img src="http://img.crazypudding.com/attach-create.png" alt="attach-create"></p>
+<p>不加上数据库名同样可以创建表TEST_TABLE：</p>
+<p><img src="http://img.crazypudding.com/create-2.png" alt="create-2"></p>
+<p>这时查询发现创建的三个表都在，现在我们把数据库分离，使用<code>DETACH DATABASE</code>语句，其基本语法如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">DETACH DATABASE &#39;Alias-Name&#39;;</span><br></pre></td></tr></table></figure>
+
+<p>来试一下分离testDB2.db，注意只能使用别名，而且当前数据库及别名为main的不能分离：</p>
+<p><img src="http://img.crazypudding.com/detach.png" alt="deatch"></p>
+<p>分离之后就只剩下当前的testDB.db这个数据库了,再查看表的时候，tst.TEST_TABLE并不在其中，这时我们quit一下，再进入到testDB2.db中看看有没有表：</p>
+<p><img src="http://img.crazypudding.com/check-table.png" alt="check-table"></p>
+<p>现在就明白了，当进行了ATTACH操作之后，凡是以别名操作的都不会影响主要数据库，除非你ATTACH的是自己本身。</p>
+<h3 id="多表操作-INNER-JOIN"><a href="#多表操作-INNER-JOIN" class="headerlink" title="多表操作(INNER JOIN)"></a>多表操作(INNER JOIN)</h3><p>多表是比较常见的，在Android开发中，有时候需要多个表来对数据进行更精确的分类存储。一般用到的就是Joins子句，可以对多个表的记录进行整合，这是主键作用就大了。这个操作一般称为JOIN，JOIN有三种类型，CROSS JOIN(交叉连接)、INNER JOIN(内连接)和OUTER　JOIN(外连接)。</p>
+<p>JOIN会把第一个表的每一行与第二个表的每一行进行匹配组合成一个新表，所以如果第一个表有ｘ列ａ行，第二个表有ｙ列ｂ行，JOIN出来的表就有ｘ＋ｙ列，行数会根据JOIN的类型不同而不同，最常用的是INNER　JOIN，这里直说这个，其他两个可以前往<a href="http://www.runoob.com/sqlite/sqlite-joins.html" target="_blank" rel="noopener">这个链接</a>了解。</p>
+<p>INNER JOIN的基本语法如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT ... FROM table1 [INNER] JOIN table2 ON conditional_expression ...</span><br></pre></td></tr></table></figure>
+
+<p><em>conditional_expression</em>可以指定条件，一般是指定两个表两个列的记录相等，从而得到相应完整的表。示例如下：</p>
+<p>新建一个表DEPARTMENT并插入记录，完善表COMPANY，最终两个表记录如下：</p>
+<p><img src="http://img.crazypudding.com/datas.png" alt="datas"></p>
+<p>现在执行内链接：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sqlite&gt; SELECT EMP_ID, NAME, DEPT FROM COMPANY INNER JOIN DEPARTMENT</span><br><span class="line">        ON COMPANY._id &#x3D; DEPARTMENT.EMP_ID;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到，通过将COMPANY中的_id与DEPARTMENT中的EMP_ID相对应，完成了两个表的整合，得到了一份更完整的信息。</p>
+<h3 id="数据库注入问题"><a href="#数据库注入问题" class="headerlink" title="数据库注入问题"></a>数据库注入问题</h3><p>数据库注入是在允许用户将输入的内容插入表中的情况下，用户有可能插入危险性的SQLite语句来对数据库进行破坏的一个安全问题。假设允许用户输入自己的姓名name，用户除了输入name之外，还有可能输入一些语句，如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">name &#x3D; &#39;myname; DROP TABLE table_name;&#39;</span><br></pre></td></tr></table></figure>
+
+<p>在这种情况下，一旦用户输入插入到表中，同时就注入了一条DROP语句，会删除整张数据库表。所以在应用中需要对用户的输入进行限制。具体就不在这里再谈了，不同的应用环境都不太一样~</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>以上就是学习SQLite之后的一些总结了，更详细的教程网上一搜一大堆，都是一些基本语句操作，不是很难，完全掌握还需要日常多运用。</p>
+<p>本文到此就结束了，如果有大神路过发现有不妥的地方烦请指正~</p>
+<hr>
+<blockquote>
+<p>文章属原创，欢迎转载，但请务必保留原文链接！</p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Android/" rel="tag"># Android</a>
+              <a href="/tags/Learning-Notes/" rel="tag"># Learning Notes</a>
+              <a href="/tags/SQLite/" rel="tag"># SQLite</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2016/10/11/Study-on-RemoteConfig-Basics/" rel="prev" title="Firebase笔记(二)-Remote Config的简单使用">
+      <i class="fa fa-chevron-left"></i> Firebase笔记(二)-Remote Config的简单使用
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2017/01/05/Learn-tp-use-greenDAO/" rel="next" title="Android ORM框架学习-greenDAO的基本使用">
+      Android ORM框架学习-greenDAO的基本使用 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+        </div>
+        
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="http://www.beian.miit.gov.cn/" rel="noopener" target="_blank">赣ICP备16009806号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Crazypudding</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">69k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">1:03</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              leancloudSelector(url).innerText = 'Counter not initialized! More info at console err msg.';
+              console.error('ATTENTION! LeanCloud counter has security bug, see how to solve it here: https://github.com/theme-next/hexo-leancloud-counter-security. \n However, you can still use LeanCloud without security, by setting `security` option to `false`.');
+            
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"d6IWzX7FjgQks0Y7UioDD24l-gzGzoHsz","app_key":"GMrkaVwqnkjwRbJGmzs42wHK","server_url":null,"security":true};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/medium-zoom@1/dist/medium-zoom.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://crazypudding.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  var disqus_config = function() {
+    this.page.url = "http://crazypudding.github.io/2016/12/29/Learning-summary-of-SQLite/";
+    this.page.identifier = "2016/12/29/Learning-summary-of-SQLite/";
+    this.page.title = "SQLite基础学习总结";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://crazypudding.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>

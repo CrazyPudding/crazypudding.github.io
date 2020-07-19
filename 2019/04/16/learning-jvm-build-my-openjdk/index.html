@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <meta name="msapplication-config" content="/images/browserconfig.xml">
+  <meta name="google-site-verification" content="v4WrTLM4pCJ7GqyDZCubQai7qb5ypHbCQYSA7cabnJA">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Dancing Script:300,300italic,400,400italic,700,700italic|Source Code Pro:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  
+  <link rel="stylesheet" href="/lib/animate-css/animate.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"crazypudding.github.io","root":"/","scheme":"Gemini","version":"8.0.0-rc.4","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":true,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"disqus","storage":true,"lazyload":false,"nav":null,"activeClass":"disqus"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}}};
+  </script>
+
+  <meta name="description" content="最近开始学习 JVM，跟着『深入理解 Java 虚拟机』一起趟坑，记下这篇笔记。以下内容都是在 64 位的 Ubuntu 18.04 的环境中进行操作的结果。由于书中写的是 OpenJDK 7 的相关内容，所以先熟悉书中相应版本的内容，之后再研究新版本的特性。 前期准备首先当然是获取 OpenJDK 的源码，获取源码有两种方式：第一种是直接从官网下载打包好的源码，下载完解压到本地就可以了，但是，这">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JVM 之旅——编译 OpenJDK">
+<meta property="og:url" content="http://crazypudding.github.io/2019/04/16/learning-jvm-build-my-openjdk/">
+<meta property="og:site_name" content="CrazyPudding&#39;s Note">
+<meta property="og:description" content="最近开始学习 JVM，跟着『深入理解 Java 虚拟机』一起趟坑，记下这篇笔记。以下内容都是在 64 位的 Ubuntu 18.04 的环境中进行操作的结果。由于书中写的是 OpenJDK 7 的相关内容，所以先熟悉书中相应版本的内容，之后再研究新版本的特性。 前期准备首先当然是获取 OpenJDK 的源码，获取源码有两种方式：第一种是直接从官网下载打包好的源码，下载完解压到本地就可以了，但是，这">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-04-16T15:47:23.000Z">
+<meta property="article:modified_time" content="2019-04-18T16:41:28.769Z">
+<meta property="article:author" content="Crazypudding">
+<meta property="article:tag" content="Learning Notes">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="JVM">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://crazypudding.github.io/2019/04/16/learning-jvm-build-my-openjdk/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>JVM 之旅——编译 OpenJDK | CrazyPudding's Note</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-172930850-1"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'UA-172930850-1');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?3c0226d1e15c67d14d87c4d6771bfb82";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <main class="main">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+        <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+        <span class="toggle-line toggle-line-first"></span>
+        <span class="toggle-line toggle-line-middle"></span>
+        <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">CrazyPudding's Note</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前期准备"><span class="nav-number">1.</span> <span class="nav-text">前期准备</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#编译过程遇到的坑"><span class="nav-number">2.</span> <span class="nav-text">编译过程遇到的坑</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#单独编译-Hotspot-虚拟机"><span class="nav-number">3.</span> <span class="nav-text">单独编译 Hotspot 虚拟机</span></a></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Crazypudding"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Crazypudding</p>
+  <div class="site-description" itemprop="description">有道无术术尚可求，有术无道止于术</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">12</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/crazypudding" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;crazypudding" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </header>
+
+      
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/crazypudding" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div id="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+      <div class="main-inner">
+        
+
+        <div class="content post posts-expand">
+          
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://crazypudding.github.io/2019/04/16/learning-jvm-build-my-openjdk/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Crazypudding">
+      <meta itemprop="description" content="有道无术术尚可求，有术无道止于术">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CrazyPudding's Note">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          JVM 之旅——编译 OpenJDK
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-04-16 23:47:23" itemprop="dateCreated datePublished" datetime="2019-04-16T23:47:23+08:00">2019-04-16</time>
+            </span>
+
+          
+            <span id="/2019/04/16/learning-jvm-build-my-openjdk/" class="post-meta-item leancloud_visitors" data-flag-title="JVM 之旅——编译 OpenJDK" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2019/04/16/learning-jvm-build-my-openjdk/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2019/04/16/learning-jvm-build-my-openjdk/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>最近开始学习 JVM，跟着『深入理解 Java 虚拟机』一起趟坑，记下这篇笔记。以下内容都是在 64 位的 Ubuntu 18.04 的环境中进行操作的结果。由于书中写的是 OpenJDK 7 的相关内容，所以先熟悉书中相应版本的内容，之后再研究新版本的特性。</p>
+<h2 id="前期准备"><a href="#前期准备" class="headerlink" title="前期准备"></a>前期准备</h2><p>首先当然是获取 OpenJDK 的源码，获取源码有两种方式：第一种是直接从官网下载打包好的源码，下载完解压到本地就可以了，但是，这种方式下载，不知道是我没找对地方还是官网真的改的一言难尽，很多超链接都 404 了，所以这种方式不是很推荐，这里还是放上我找到的<a href="https://download.java.net/openjdk/jdk7/" target="_blank" rel="noopener">下载地址</a>；另一种方式就是版本控制工具下载，不过这个版本控制工具不是 Git、SVN 这类比较常见的，而是 Mercurial。以下命令可以安装 Mercurial：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install mercurial</span><br></pre></td></tr></table></figure>
+
+<p>安装好 Mercurial 就可以通过 OpenJDK 的仓库地址将源码拉下来了：</p>
+<a id="more"></a>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">hg <span class="built_in">clone</span> http://hg.openjdk.java.net/jdk7/jdk7 OpenJDKDirName</span><br><span class="line"><span class="built_in">cd</span> OpenJDKDirName</span><br><span class="line">sh ./get_source.sh</span><br></pre></td></tr></table></figure>
+
+<p>其他版本的仓库地址<a href="http://openjdk.java.net/groups/build/" target="_blank" rel="noopener">官方文档</a>中 <strong>Documentation</strong> 部分找到，下载过程可能会有点慢，等着就好了，下载完了一定要打开 <code>OpenJDKDirName/README-builds.html</code> 看看，或者上述 <strong>Documentation</strong> 中各个版本的 <code>README</code> 看看，内容是一样的，这份文档详细的介绍了编译 OpenJDK 需要注意的事项以及编译的步骤。编译 OpenJDK 需要注意的依赖要求及我在配置过程遇到的坑记录如下：</p>
+<ul>
+<li><p><strong>Bootstrap JDK：</strong> 这个 JDK 是指上一个 release 版本的 JDK 作为基础，比如编译 OpenJDK 7 就需要 OpenJDK 6，并且需要将 OpenJDK 的路径配置为 <code>ALT_BOOTDIR</code> 的值</p>
+</li>
+<li><p><strong>Ant：</strong> Ant 需要 1.7.1 以上的版本。这个需要注意不能使用 1.10.x 以上的版本，因为 1.10.x 以上的版本需要 JDK 8 的支持，所以这个建议到<a href="https://ant.apache.org/" target="_blank" rel="noopener">Ant官网</a>手动下载合适的版本，或者直接从 <code>README-builds</code> 提供的链接下载，手动安装需要配置环境变量 <code>ANT_HOME</code> 为 Ant 的路径，并且将 <code>${ANT_HOME}/bin</code> 配置到 <code>PATH</code> 中</p>
+</li>
+<li><p><strong>FreeType 2：</strong> 需要 2.3 以上的版本。这里遇到个奇怪的 bug，我安装了 2.10 版本的 FreeType 2，最后检查的时候非说 2.10 版本低于 2.3，无奈最后从官网下载了 2.9 配置好才没有报错。从 FreeType 2 官网下载好源码好按照其中的 <code>README</code> 文档进行编译安装，最终库文件位于 <code>/usr/local/lib</code> 下，对应需要配置的变量为 <code>ALT_FREETYPE_LIB_PATH</code>；头文件位于 <code>/usr/local/include</code> 下，对应需要配置的变量为 <code>ALT_FREETYPE_HEADERS_PATH</code></p>
+</li>
+<li><p><strong>ALSA：</strong> 这个依赖通过 <code>sudo apt-get install libasound2-dev</code> 来安装即可</p>
+</li>
+</ul>
+<p>依赖安装完成后对应需要配置环境变量，除了以上各依赖对应的环境变量以外，参考书中内容整理了配置环境变量的脚本 <code>variable_script.sh</code>：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line"><span class="comment"># set variable before build open jdk</span></span><br><span class="line"><span class="comment"># 设置语言选项，以防编译时出现 NullPointorException</span></span><br><span class="line"><span class="built_in">export</span> LANG=C</span><br><span class="line"></span><br><span class="line"><span class="comment"># 这是 Bootstrap JDK 对应的环境变量</span></span><br><span class="line"><span class="built_in">export</span> ALT_BOOTDIR=~/Software/Java/jdk1.6.0_45</span><br><span class="line"></span><br><span class="line"><span class="comment"># 允许编译时自动下载依赖</span></span><br><span class="line"><span class="built_in">export</span> ALLOW_DOWNLOADS=<span class="literal">true</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 比较本次 build 出来的映像与先前版本的差异。</span></span><br><span class="line"><span class="built_in">export</span> SKIP_COMPARE_IMAGES=<span class="literal">true</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 使用预编译头文件，可以加快编译速度</span></span><br><span class="line"><span class="built_in">export</span> USE_PRECOMPILED_HEADERS=<span class="literal">true</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 要编译的内容</span></span><br><span class="line"><span class="built_in">export</span> BUILD_LANGTOOLS=<span class="literal">true</span></span><br><span class="line"><span class="built_in">export</span> BUILD_HOTSPOT=<span class="literal">true</span></span><br><span class="line"><span class="built_in">export</span> BUILD_JDK=<span class="literal">true</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 避开 javaws 和浏览器 Java 插件之类部分的编译</span></span><br><span class="line"><span class="built_in">export</span> BUILD_DEPLOY=<span class="literal">false</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 不编译出安装包</span></span><br><span class="line"><span class="built_in">export</span> BUILD_INSTALL=<span class="literal">false</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 编译结果所存放的路径，不设置的话编译结果存放于 OpenJDKDirName/build/bsd</span></span><br><span class="line"><span class="comment"># bsd 指不同系统内核</span></span><br><span class="line"><span class="built_in">export</span> ALT_OUTPUTDIR=...</span><br><span class="line"></span><br><span class="line"><span class="comment"># 这两个环境变量必须去掉，不然编译前的检测会通不过</span></span><br><span class="line"><span class="built_in">unset</span> JAVA_HOME</span><br><span class="line"><span class="built_in">unset</span> CLASSPATH</span><br></pre></td></tr></table></figure>
+<p>编译之前运行 <code>source variable_script.sh</code> 即可让以上环境变量生效，之后使用 <code>make sanity</code> 检测变量配置情况，如果最终出现 <code>Sanity check passed</code> 则表示检测通过了，可以输入 <code>make</code> 命令进行编译了，如果出现错误提示，根据提示解决相应问题就行了。当然这些命令都是在 <code>OpenJDKDirName</code> 目录下运行的。最终会在终端看到日志输出，如果需要保存日志的话，执行 <code>make</code> 命令的时候利用管道将日志输出到文件即可，将 <code>make</code> 命令换成 <code>make 2&gt;&amp;1 | tee &lt;destination&gt;/build.log</code>。整个编译过程大概持续了半小时，静静等着就好了，如果中途出错，它会提示你的。</p>
+<h2 id="编译过程遇到的坑"><a href="#编译过程遇到的坑" class="headerlink" title="编译过程遇到的坑"></a>编译过程遇到的坑</h2><p>由于编译过程没有记录日志，印象中除了依赖部分提到的问题，另外遇到的坑就是编译过程中报出 <code>cc1plus all warnings being treated as errors ubuntu</code>，这是因为编译检测过程比较严格，将警告当成错误处理阻止继续编译，解决办法是修改配置文件 <code>./hotspot/make/linux/makefiles/gcc.make</code>，将 <code>WARNING_ARE_ERRORS</code> 变量改为</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">WARNING_ARE_ERRORS &#x3D; -Wno-error</span><br></pre></td></tr></table></figure>
+
+<p>编译结束后，如果看到类似以下的信息，说明 OpenJDK 编译成功了。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">#-- Build times ----------</span><br><span class="line">Target debug_build</span><br><span class="line">Start 2019-04-12 00:35:21</span><br><span class="line">End   2017-04-12 00:38:38</span><br><span class="line">00:01:23 corba</span><br><span class="line">00:01:10 hotspot</span><br><span class="line">00:00:14 jaxp</span><br><span class="line">00:06:06 jaxws</span><br><span class="line">00:08:31 jdk</span><br><span class="line">00:18:03 langtools</span><br><span class="line">00:03:17 TOTAL</span><br><span class="line">-------------------------</span><br></pre></td></tr></table></figure>
+
+<p>编译成功后进入编译结果存放的路径，下面有 <code>./j2sdk-image</code> 进入后就是平时使用的 JDK 了，将其配置到 <code>JAVA_HOME</code> 环境变量就可以正常使用 JDK 了。使用 <code>java -version</code> 还可以看到用户名的机器名，比如我的就是：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">openjdk version &quot;1.7.0-internal&quot;</span><br><span class="line">OpenJDK Runtime Environment (build 1.7.0-internal-crazypudding_2019_04_12_20_39-b00)</span><br><span class="line">OpenJDK 64-Bit Server VM (build 24.95-b00, mixed mode)</span><br></pre></td></tr></table></figure>
+
+<p>至此，OpenJDK 的编译就告一段落了。既然我们是研究 JVM，当然我们的主要目标是 Hotspot，而且调试虚拟机后的改动也不用编译整个 OpenJDK 了，那继续单独编译 Hotspot。</p>
+<h2 id="单独编译-Hotspot-虚拟机"><a href="#单独编译-Hotspot-虚拟机" class="headerlink" title="单独编译 Hotspot 虚拟机"></a>单独编译 Hotspot 虚拟机</h2><p>编译虚拟机其实也很简单，不过书中写的不是特别明了，所以还是费了我不少时间，这里就简单记录下完整的过程就好了。</p>
+<p>很明显，Hotspot 是由 C 编写的，由 Makefile 管理编译过程，所以可以将 Hotspot 作为单独模块拿出来编译，使用的就是 <code>OpenJDKDirName/hotspot/make</code> 目录下的 <code>Makefile</code> 文件，记得终端需要切换到 <code>OpenJDKDirName/hotspot/make</code> 目录下，其他参数与编译 OpenJDK 时保持一致就 ok，如果需要重新配置环境变量的话，使用之前编写的 <code>source variable_script.sh</code> 就可以了。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> OpenJDKDirName/hotspot/make</span><br><span class="line">make</span><br></pre></td></tr></table></figure>
+
+<p>期间可能会因为 Bootstrap JDK 是 64 位的终端编译，查看日志会发现提示 <code>JAVA_HOME must point to 32 bit</code> 之类的，解决方法就是下载一个 32 位的 Bootstrap JDK 并设置好环境变量 <code>ALT_BOOTDIR</code> 即可。</p>
+<p>编译过程大概也是半小时左右，耐心等待就好了，输出结果存放在之前配置的结果存放路径下的 <code>./hotspot/outputdit/bsd_compiler2</code> 目录中，由于没有制定编译版本，所以默认是 product，进入 <code>product</code> 下修改下 <code>env.sh</code> 文件，新增一个环境变量如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">LD_LIBRARY_PATH=.:<span class="variable">$&#123;JAVA_HOME&#125;</span>/jre/ilb/amd64/native_threads:<span class="variable">$&#123;JAVA_HOME&#125;</span>/jre/lib/amd64</span><br><span class="line"><span class="built_in">export</span> LD_LIBRARY_PATH</span><br></pre></td></tr></table></figure>
+
+<p>配置完后在当前路径执行以下命令启动虚拟机，输出版本号：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">. ./env.sh</span><br><span class="line">./gamma -version</span><br></pre></td></tr></table></figure>
+
+<p>会看到如下结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Using java runtime at: &#x2F;home&#x2F;crazypudding&#x2F;Documents&#x2F;jdk7u&#x2F;build&#x2F;linux-amd64&#x2F;j2sdk-image&#x2F;jre</span><br><span class="line">openjdk version &quot;1.7.0-internal&quot;</span><br><span class="line">OpenJDK Runtime Environment (build 1.7.0-internal-crazypudding_2019_04_12_20_39-b00)</span><br><span class="line">OpenJDK 64-Bit Server VM (build 24.95-b00, mixed mode)</span><br></pre></td></tr></table></figure>
+
+<p>至此，Hotspot 虚拟机也完成编译了～</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Learning-Notes/" rel="tag"># Learning Notes</a>
+              <a href="/tags/Java/" rel="tag"># Java</a>
+              <a href="/tags/JVM/" rel="tag"># JVM</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/06/21/ViewAnimation/" rel="prev" title="Android 动画——View Animation">
+      <i class="fa fa-chevron-left"></i> Android 动画——View Animation
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+        </div>
+        
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="http://www.beian.miit.gov.cn/" rel="noopener" target="_blank">赣ICP备16009806号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Crazypudding</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">69k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">1:03</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              leancloudSelector(url).innerText = 'Counter not initialized! More info at console err msg.';
+              console.error('ATTENTION! LeanCloud counter has security bug, see how to solve it here: https://github.com/theme-next/hexo-leancloud-counter-security. \n However, you can still use LeanCloud without security, by setting `security` option to `false`.');
+            
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"d6IWzX7FjgQks0Y7UioDD24l-gzGzoHsz","app_key":"GMrkaVwqnkjwRbJGmzs42wHK","server_url":null,"security":true};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/medium-zoom@1/dist/medium-zoom.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://crazypudding.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  var disqus_config = function() {
+    this.page.url = "http://crazypudding.github.io/2019/04/16/learning-jvm-build-my-openjdk/";
+    this.page.identifier = "2019/04/16/learning-jvm-build-my-openjdk/";
+    this.page.title = "JVM 之旅——编译 OpenJDK";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://crazypudding.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>

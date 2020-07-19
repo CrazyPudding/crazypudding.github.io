@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <meta name="msapplication-config" content="/images/browserconfig.xml">
+  <meta name="google-site-verification" content="v4WrTLM4pCJ7GqyDZCubQai7qb5ypHbCQYSA7cabnJA">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Dancing Script:300,300italic,400,400italic,700,700italic|Source Code Pro:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  
+  <link rel="stylesheet" href="/lib/animate-css/animate.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"crazypudding.github.io","root":"/","scheme":"Gemini","version":"8.0.0-rc.4","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":true,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"disqus","storage":true,"lazyload":false,"nav":null,"activeClass":"disqus"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}}};
+  </script>
+
+  <meta name="description" content="Firebase是什么？做移动应用开发，基本离不开应用程序的前端开发和服务器数据的后台处理，尴尬的是移动应用开发者不一定都懂后端开发，这在一定程度上加大了开发移动应用程序的困难。不过近几年出了一款新型的服务，叫BaaS(Backend as a Service，后端服务系统)，是BaaS公司为移动开发者整合的云后端服务。也就是说，通过在云端的操作就可以处理一些简单的后端数据处理。BaaS供应商提供">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Firebase笔记(一)-初探Firebase">
+<meta property="og:url" content="http://crazypudding.github.io/2016/10/08/Study-on-firebase/">
+<meta property="og:site_name" content="CrazyPudding&#39;s Note">
+<meta property="og:description" content="Firebase是什么？做移动应用开发，基本离不开应用程序的前端开发和服务器数据的后台处理，尴尬的是移动应用开发者不一定都懂后端开发，这在一定程度上加大了开发移动应用程序的困难。不过近几年出了一款新型的服务，叫BaaS(Backend as a Service，后端服务系统)，是BaaS公司为移动开发者整合的云后端服务。也就是说，通过在云端的操作就可以处理一些简单的后端数据处理。BaaS供应商提供">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://img.crazypudding.com/firebase/android_version.png">
+<meta property="og:image" content="http://img.crazypudding.com/firebase/google_play_services.png">
+<meta property="og:image" content="http://img.crazypudding.com/firebase/sdk_manager.png">
+<meta property="og:image" content="http://img.crazypudding.com/firebase/check_google_service.png">
+<meta property="og:image" content="http://img.crazypudding.com/firebase/firebase_project.png">
+<meta property="og:image" content="http://img.crazypudding.com/firebase/app_config.png">
+<meta property="og:image" content="http://img.crazypudding.com/firebase/get_package_name.png">
+<meta property="og:image" content="http://img.crazypudding.com/firebase/get_sha1.png">
+<meta property="og:image" content="http://img.crazypudding.com/firebase/config_file.png">
+<meta property="og:image" content="http://img.crazypudding.com/firebase/add_classpath.png">
+<meta property="og:image" content="http://img.crazypudding.com/firebase/add_apply.png">
+<meta property="og:image" content="http://img.crazypudding.com/firebase/available_lib.png">
+<meta property="og:image" content="http://img.crazypudding.com/firebase/run_app.png">
+<meta property="article:published_time" content="2016-10-08T15:42:14.000Z">
+<meta property="article:modified_time" content="2019-04-13T14:38:27.572Z">
+<meta property="article:author" content="Crazypudding">
+<meta property="article:tag" content="Android">
+<meta property="article:tag" content="Learning Notes">
+<meta property="article:tag" content="Firebase">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://img.crazypudding.com/firebase/android_version.png">
+
+<link rel="canonical" href="http://crazypudding.github.io/2016/10/08/Study-on-firebase/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Firebase笔记(一)-初探Firebase | CrazyPudding's Note</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-172930850-1"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'UA-172930850-1');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?3c0226d1e15c67d14d87c4d6771bfb82";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <main class="main">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+        <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+        <span class="toggle-line toggle-line-first"></span>
+        <span class="toggle-line toggle-line-middle"></span>
+        <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">CrazyPudding's Note</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Firebase是什么？"><span class="nav-number">1.</span> <span class="nav-text">Firebase是什么？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#如何将Firebase整合到移动应用中"><span class="nav-number">2.</span> <span class="nav-text">如何将Firebase整合到移动应用中</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#前提条件"><span class="nav-number">2.1.</span> <span class="nav-text">前提条件</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#检查Android设备"><span class="nav-number">2.1.1.</span> <span class="nav-text">检查Android设备</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#检查SDK管理器"><span class="nav-number">2.1.2.</span> <span class="nav-text">检查SDK管理器</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#将Firebase整合到APP中"><span class="nav-number">2.2.</span> <span class="nav-text">将Firebase整合到APP中</span></a></li></ol></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Crazypudding"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Crazypudding</p>
+  <div class="site-description" itemprop="description">有道无术术尚可求，有术无道止于术</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">12</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/crazypudding" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;crazypudding" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </header>
+
+      
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/crazypudding" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div id="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+      <div class="main-inner">
+        
+
+        <div class="content post posts-expand">
+          
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://crazypudding.github.io/2016/10/08/Study-on-firebase/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Crazypudding">
+      <meta itemprop="description" content="有道无术术尚可求，有术无道止于术">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CrazyPudding's Note">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Firebase笔记(一)-初探Firebase
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2016-10-08 23:42:14" itemprop="dateCreated datePublished" datetime="2016-10-08T23:42:14+08:00">2016-10-08</time>
+            </span>
+
+          
+            <span id="/2016/10/08/Study-on-firebase/" class="post-meta-item leancloud_visitors" data-flag-title="Firebase笔记(一)-初探Firebase" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2016/10/08/Study-on-firebase/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2016/10/08/Study-on-firebase/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.1k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="Firebase是什么？"><a href="#Firebase是什么？" class="headerlink" title="Firebase是什么？"></a>Firebase是什么？</h2><p>做移动应用开发，基本离不开应用程序的前端开发和服务器数据的后台处理，尴尬的是移动应用开发者不一定都懂后端开发，这在一定程度上加大了开发移动应用程序的困难。不过近几年出了一款新型的服务，叫BaaS(Backend as a Service，后端服务系统)，是BaaS公司为移动开发者整合的云后端服务。也就是说，通过在云端的操作就可以处理一些简单的后端数据处理。BaaS供应商提供API，让开发者通过几行简单的代码就可以整合一些后端功能，比如数据存储，应用分析等。Firebase也是这样的BaaS。</p>
+<p>Firebase在2014年被谷歌收购后不断成长，谷歌对其进行了一些列的整改，在2016年的I/O大会上发布了Firebase2.0。新版的Firebase以Analytics为功能拓展了很多实用的功能，比如远程配置、云消息推送、奔溃报告等，而且目前可以免费使用，这对于开发者来讲无疑是一大福音。这是<a href="https://firebase.google.com" target="_blank" rel="noopener">Firebase官网</a>。</p>
+<a id="more"></a>
+
+<h2 id="如何将Firebase整合到移动应用中"><a href="#如何将Firebase整合到移动应用中" class="headerlink" title="如何将Firebase整合到移动应用中"></a>如何将Firebase整合到移动应用中</h2><p>Firebase目前支持Android、iOS、web端三种移动应用，不同平台整合的步骤有所区别，可以跟着<a href="https://firebase.google.com/docs/" target="_blank" rel="noopener">官方文档</a>进行操作，这里只对Android平台进行记录。</p>
+<p>进入firebase官网右上角有一个<code>Go to console</code>，可以在控制台新建一个项目或对之前项目进行编辑。这里的项目和应用是有区别的，应用就是实打实在开发的一个应用程序，而项目里面可以包含多个应用，因为有些应用可能需要推送相同的消息给用户，而有些应用需要相同的数据，所以就可以把具有相同需求的应用添加到同一个项目中。最典型的例子就是iOS客户端和Android客户端，把这种跨平台的应用添加到同一个项目中就可以实现后台同步更新数据了。现在可以正式开始整合Firebase到Android应用中了：</p>
+<h3 id="前提条件"><a href="#前提条件" class="headerlink" title="前提条件"></a>前提条件</h3><p>想要Firebase的众多功能还需要满足一定的硬件或软件方面的条件，比如有些功能是不能在国内使用的，但是所用功能都要满足最基本的硬性要求：</p>
+<blockquote>
+<ol>
+<li>Android版本在2.3之后，并且设备中需要有9.6.1版本或者更新的Google Play Services（建议保持最新版）</li>
+<li>Android SDK管理器中要有 <em>Google Reopsitory</em> 和 <em>Google Play Services</em>（这俩项也建议保持最新版）</li>
+<li>Android Studio需要是1.5版本或者1.5以后的</li>
+</ol>
+</blockquote>
+<p>具备以上条件就可以放心的整合Firebase到应用中了。经过测试，只要满足了以上的条件，Firebase大部分功能都可以在国内使用。先检查是否符合开发要求：</p>
+<h4 id="检查Android设备"><a href="#检查Android设备" class="headerlink" title="检查Android设备"></a>检查Android设备</h4><p>打开手机或者模拟器系统设置，滑到最底部有一个<code>关于手机</code>，进去之后就可以看到当前设备的android版本：</p>
+<p><img src="http://img.crazypudding.com/firebase/android_version.png" alt="android_version"></p>
+<p>返回到设置界面往上有一个<code>应用</code>选项，进去之后在全部应用里找到Google Play Services，看看版本号是不是9.6.1以后的：</p>
+<p><img src="http://img.crazypudding.com/firebase/google_play_services.png" alt="google_play_services"></p>
+<p>可以看到图中是9.6.83版本的，如果在没有找到这个选项说明手机还没有安装Google服务框架，真机可以到<a href="http://www.apkmirror.com/apk/google-inc/google-play-services/" target="_blank" rel="noopener">这里</a>下载相应版本的apk安装包，同时记得下载新版的<a href="http://www.apkmirror.com/apk/google-inc/google-play-store/" target="_blank" rel="noopener">Google Play Store</a>。如果是模拟器的话，可以下载X86平台相应版本的<a href="http://opengapps.org/" target="_blank" rel="noopener">GApps</a>，直接拖拽到模拟器界面会自动安装，之后重启就可以了。</p>
+<h4 id="检查SDK管理器"><a href="#检查SDK管理器" class="headerlink" title="检查SDK管理器"></a>检查SDK管理器</h4><p>在Android Studio中打开SDK管理器<img src="http://img.crazypudding.com/firebase/sdk_manager.png" alt="sdk_manager">，选择SDK tools选项卡，检查下图中选项的版本：</p>
+<p><img src="http://img.crazypudding.com/firebase/check_google_service.png" alt="check_google_service"></p>
+<p>这两项建议保持最新版本的更新。检查完Android设备和SDK管理器之后，Android Studio的版本在打开的时候就可以看到了，建议保持官网最新的稳定版。</p>
+<h3 id="将Firebase整合到APP中"><a href="#将Firebase整合到APP中" class="headerlink" title="将Firebase整合到APP中"></a>将Firebase整合到APP中</h3><p>一切准备就绪就可以开始整合的工作了。</p>
+<p>可以选择任意一个想整合Firebase的项目在Android Studio打开，也可以新建一个。新建完成后回到Firebase的控制版(console)，点击新建项目：</p>
+<p><img src="http://img.crazypudding.com/firebase/firebase_project.png" alt="firebase_project"></p>
+<p>按提示填好项目名和地区，firebase会根据设置的地区进行相应的分析，比如币种。创建完成后会跳转到firebase项目的仪表板，选择创建Android应用，弹出应用配置对话框：</p>
+<p><img src="http://img.crazypudding.com/firebase/app_config.png" alt="app_config"></p>
+<p>软件包名可以在app级的gradle文件中的<code>applicationId</code>属性中找到，也可以在java文件的最顶部找到：</p>
+<p><img src="http://img.crazypudding.com/firebase/get_package_name.png" alt="get_package_name"></p>
+<p>在项目文件夹下有一个root-level(项目级)的gradle文件，在项目文件夹的app目录下有一个app级的gradle文件，稍后会对其进行相应配置。</p>
+<p>将包名填写到应用配置的软件包名称中，还有一个调试签名证书SHA1，下面有介绍到firebase的部分功能需要这个SHA1密匙，所以还是填写一下。获取SHA1的方法有两个：</p>
+<p><strong>1.在Android Studio中获取</strong>。在AS面板的右侧有一个Gradle按钮，点开之后按图示双击signingReport(第一次创建的项目需要点击旁边的刷新按钮才会显示)，会在底部Run面板看到输出结果，其中就包含我需要的SHA1：</p>
+<p><img src="http://img.crazypudding.com/firebase/get_sha1.png" alt="get_sha1"></p>
+<p><strong>2.在命令行获取</strong>。打开命令行工具输入如下命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">keytool -exportcert -list-v -<span class="built_in">alias</span> androiddebugkey -keystore &lt;your_file_name&gt;/.android/debug.keystore</span><br></pre></td></tr></table></figure>
+
+<p><code>&lt;your_file_name&gt;</code>是指<code>.android</code>文件夹所在的目录。之后会需要输入密匙库口令，就是”android”,回车就能在下面看到SHA1。</p>
+<p>将获取到的SHA1值填入应用配置中，添加应用后会自动下载一个<code>google-services.json</code>文件，将这个文件复制到AS项目中app文件夹下：</p>
+<p><img src="http://img.crazypudding.com/firebase/config_file.png" alt="config_file"></p>
+<p>复制完成之后对gradle文件进行配置。在项目级gradle文件中的dependencies添加classpath：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">classpath &#39;com.google.gms:google-services:3.0.0&#39;</span><br></pre></td></tr></table></figure>
+
+<p>完成后如下图：</p>
+<p><img src="http://img.crazypudding.com/firebase/add_classpath.png" alt="add_classpath"></p>
+<p>然后配置SDK，在app级gradle文件中添加：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">dependencies &#123;</span><br><span class="line">    ...</span><br><span class="line">    compile &#39;com.android.support:appcompat-v7:24.2.1&#39;</span><br><span class="line">    compile &#39;com.google.firebase:firebase-core:9.6.1&#39;</span><br><span class="line">    testCompile &#39;junt:junt:4.12&#39;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">apply plugin: &#39;com.google.gms.google-services&#39;</span><br></pre></td></tr></table></figure>
+
+<p>添加后如图：</p>
+<p><img src="http://img.crazypudding.com/firebase/add_apply.png" alt="add_apply"></p>
+<p>添加完成后点击右上角<code>Sync Now</code>会重新构建项目。</p>
+<p>图中框出来的是新增的内容，绿框中的是firebase核心库，因为firebase是核心功能是Analytics，所以添加了这两项之后就可以使用firebase的分析功能记录分析用户的使用情况了。这项核心功能就算不手动添加，AS也会自动完成，不过为了保证是最新版的，所以手动添加。如果需要使用firebase的其他功能，就要将相应的库添加到绿框标出的核心库后面，各项功能可用库的版本可以在<a href="https://firebase.google.com/docs/android/setup#available_libraries" target="_blank" rel="noopener">官方文档</a>看到:</p>
+<p><img src="http://img.crazypudding.com/firebase/available_lib.png" alt="available_lib"></p>
+<p>现在我们将app部署到设备中查看firebase是否配置成功。和平时一样将app运行到相应设备，查看底部监控器的输出的Log，如果出现<code>FirebaseApp initialization successful</code>则说明已经将firebase整合到应用中了，接下来就可以添加相应的API配置firebase功能到APP中了。</p>
+<blockquote>
+<p>如果在查看SHA1密匙过程中是在AS中获取的话，运行图标处会变成<img src="http://img.crazypudding.com/firebase/run_app.png" alt="run_app">,点击倒三角改为app就可以正常运行了。</p>
+</blockquote>
+<hr>
+<blockquote>
+<p>文章属原创，欢迎转载，但请务必保留原文链接！</p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Android/" rel="tag"># Android</a>
+              <a href="/tags/Learning-Notes/" rel="tag"># Learning Notes</a>
+              <a href="/tags/Firebase/" rel="tag"># Firebase</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2016/10/05/Configurating-java-development-environment/" rel="prev" title="详解Java开发环境配置">
+      <i class="fa fa-chevron-left"></i> 详解Java开发环境配置
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2016/10/11/Study-on-RemoteConfig-Basics/" rel="next" title="Firebase笔记(二)-Remote Config的简单使用">
+      Firebase笔记(二)-Remote Config的简单使用 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+        </div>
+        
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="http://www.beian.miit.gov.cn/" rel="noopener" target="_blank">赣ICP备16009806号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Crazypudding</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">69k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">1:03</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              leancloudSelector(url).innerText = 'Counter not initialized! More info at console err msg.';
+              console.error('ATTENTION! LeanCloud counter has security bug, see how to solve it here: https://github.com/theme-next/hexo-leancloud-counter-security. \n However, you can still use LeanCloud without security, by setting `security` option to `false`.');
+            
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"d6IWzX7FjgQks0Y7UioDD24l-gzGzoHsz","app_key":"GMrkaVwqnkjwRbJGmzs42wHK","server_url":null,"security":true};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/medium-zoom@1/dist/medium-zoom.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://crazypudding.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  var disqus_config = function() {
+    this.page.url = "http://crazypudding.github.io/2016/10/08/Study-on-firebase/";
+    this.page.identifier = "2016/10/08/Study-on-firebase/";
+    this.page.title = "Firebase笔记(一)-初探Firebase";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://crazypudding.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>

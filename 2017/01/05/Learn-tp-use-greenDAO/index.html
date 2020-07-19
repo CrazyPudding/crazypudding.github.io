@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <meta name="msapplication-config" content="/images/browserconfig.xml">
+  <meta name="google-site-verification" content="v4WrTLM4pCJ7GqyDZCubQai7qb5ypHbCQYSA7cabnJA">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Dancing Script:300,300italic,400,400italic,700,700italic|Source Code Pro:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  
+  <link rel="stylesheet" href="/lib/animate-css/animate.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"crazypudding.github.io","root":"/","scheme":"Gemini","version":"8.0.0-rc.4","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":true,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"disqus","storage":true,"lazyload":false,"nav":null,"activeClass":"disqus"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}}};
+  </script>
+
+  <meta name="description" content="Android内置了SQLite数据库，而且可以利用JDBC对数据库进行操作，还提供了一个辅助类SQLiteOpenHelper对SQLite进行了简单的封装，但是一遍一遍的重复调用不仅枯燥而且敲代码的效率也很难上去。所以聪明的人类又想到把数据库底层进一步封装起来，只把操作接口，比如增删改查这一类的暴露给开发者，这样一来，不仅提升了开发效率，而且开发者不需要再花心思去关注底层逻辑实现了。这一类封装">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android ORM框架学习-greenDAO的基本使用">
+<meta property="og:url" content="http://crazypudding.github.io/2017/01/05/Learn-tp-use-greenDAO/">
+<meta property="og:site_name" content="CrazyPudding&#39;s Note">
+<meta property="og:description" content="Android内置了SQLite数据库，而且可以利用JDBC对数据库进行操作，还提供了一个辅助类SQLiteOpenHelper对SQLite进行了简单的封装，但是一遍一遍的重复调用不仅枯燥而且敲代码的效率也很难上去。所以聪明的人类又想到把数据库底层进一步封装起来，只把操作接口，比如增删改查这一类的暴露给开发者，这样一来，不仅提升了开发效率，而且开发者不需要再花心思去关注底层逻辑实现了。这一类封装">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://img.crazypudding.com/greenDAO/greenDAO-orm.png">
+<meta property="og:image" content="http://img.crazypudding.com/greenDAO/add-gradle-plugin.png">
+<meta property="og:image" content="http://img.crazypudding.com/greenDAO/add-greenDAO-configuration.png">
+<meta property="og:image" content="http://img.crazypudding.com/greenDAO/configure-gradle-plugin.png">
+<meta property="og:image" content="http://img.crazypudding.com/greenDAO/make-project.png">
+<meta property="og:image" content="http://img.crazypudding.com/greenDAO/add.gif">
+<meta property="og:image" content="http://img.crazypudding.com/greenDAO/delete.gif">
+<meta property="og:image" content="http://img.crazypudding.com/greenDAO/update.gif">
+<meta property="og:image" content="http://img.crazypudding.com/greenDAO/query.gif">
+<meta property="article:published_time" content="2017-01-05T15:50:13.000Z">
+<meta property="article:modified_time" content="2019-04-13T14:36:46.768Z">
+<meta property="article:author" content="Crazypudding">
+<meta property="article:tag" content="Android">
+<meta property="article:tag" content="ORM">
+<meta property="article:tag" content="Learning Notes">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://img.crazypudding.com/greenDAO/greenDAO-orm.png">
+
+<link rel="canonical" href="http://crazypudding.github.io/2017/01/05/Learn-tp-use-greenDAO/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Android ORM框架学习-greenDAO的基本使用 | CrazyPudding's Note</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-172930850-1"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'UA-172930850-1');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?3c0226d1e15c67d14d87c4d6771bfb82";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <main class="main">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+        <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+        <span class="toggle-line toggle-line-first"></span>
+        <span class="toggle-line toggle-line-middle"></span>
+        <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">CrazyPudding's Note</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#greenDAO是什么"><span class="nav-number">1.</span> <span class="nav-text">greenDAO是什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#为项目添加greenDAO的Gradle插件"><span class="nav-number">2.</span> <span class="nav-text">为项目添加greenDAO的Gradle插件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#greenDAO的基本注解"><span class="nav-number">3.</span> <span class="nav-text">greenDAO的基本注解</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#grenDAO生成的类"><span class="nav-number">4.</span> <span class="nav-text">grenDAO生成的类</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#greenDAO的使用"><span class="nav-number">5.</span> <span class="nav-text">greenDAO的使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#初始化green-DAO"><span class="nav-number">5.1.</span> <span class="nav-text">初始化green DAO</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#增"><span class="nav-number">5.2.</span> <span class="nav-text">增</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#删"><span class="nav-number">5.3.</span> <span class="nav-text">删</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#改"><span class="nav-number">5.4.</span> <span class="nav-text">改</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#查"><span class="nav-number">5.5.</span> <span class="nav-text">查</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Crazypudding"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Crazypudding</p>
+  <div class="site-description" itemprop="description">有道无术术尚可求，有术无道止于术</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">12</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/crazypudding" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;crazypudding" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </header>
+
+      
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/crazypudding" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div id="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+      <div class="main-inner">
+        
+
+        <div class="content post posts-expand">
+          
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://crazypudding.github.io/2017/01/05/Learn-tp-use-greenDAO/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Crazypudding">
+      <meta itemprop="description" content="有道无术术尚可求，有术无道止于术">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CrazyPudding's Note">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Android ORM框架学习-greenDAO的基本使用
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-01-05 23:50:13" itemprop="dateCreated datePublished" datetime="2017-01-05T23:50:13+08:00">2017-01-05</time>
+            </span>
+
+          
+            <span id="/2017/01/05/Learn-tp-use-greenDAO/" class="post-meta-item leancloud_visitors" data-flag-title="Android ORM框架学习-greenDAO的基本使用" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2017/01/05/Learn-tp-use-greenDAO/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2017/01/05/Learn-tp-use-greenDAO/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>8.9k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>8 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Android内置了SQLite数据库，而且可以利用JDBC对数据库进行操作，还提供了一个辅助类SQLiteOpenHelper对SQLite进行了简单的封装，但是一遍一遍的重复调用不仅枯燥而且敲代码的效率也很难上去。所以聪明的人类又想到把数据库底层进一步封装起来，只把操作接口，比如增删改查这一类的暴露给开发者，这样一来，不仅提升了开发效率，而且开发者不需要再花心思去关注底层逻辑实现了。这一类封装了底层数据库的数据库框架又被称为ORM框架，<a href="http://greenrobot.org/greendao/" target="_blank" rel="noopener">greenDAO</a>就是其中之一。ORM框架有很多，之所以选择学习greenDAO，是综合了广大网友的评估意见，greenDAO确实是杠杠的，其他的框架之后有时间再进行学习。</p>
+<p><img src="http://img.crazypudding.com/greenDAO/greenDAO-orm.png" alt="greenDAO-orm"></p>
+<a id="more"></a>
+
+<h2 id="greenDAO是什么"><a href="#greenDAO是什么" class="headerlink" title="greenDAO是什么"></a>greenDAO是什么</h2><p>前面将greenDAO概括为封装了底层数据库的框架，确实是这样，官网都说了，它为关系数据库(也就是SQLite)提供了面向对象的接口，简单实现了很多对数据的重复操作。这么说可能有点抽象，要清晰的了解greenDAO的话，建议先自行补充精神食粮：</p>
+<ul>
+<li>ORM：即Object Relation Mapping(关系对象映射)，也就是把关系数据库中的关系(可以理解为表)映射成Java对象，通过对Java对象的处理来操作数据库中的数据，利用面向对象的思想解决了开发者需要面对复杂的SQL语句的问题</li>
+<li>关系数据库：ORM就是因为关系数据库而产生了，所以了解关系数据库是很有必要的</li>
+<li>Annotation：是指Java中的注解。greenDAO3中一改以前的风格，利用注解(Annotation)来生成相应的项目，所也要对它有个初步认识</li>
+</ul>
+<p>由上图可以看到，greenDAO是间隔于Java对象与数据库之间的一层，通过greenDAO，数据库table中的每一条记录被映射成一个Java对象(就是后面会说到的Entity)，记录的字段对应着Java对象的属性，可以直接通过getter和setter方法对字段进行操作，这中间发生的SQL语句完全不需要担心，greenDAO会自动生成一些类来完成这些任务。所以选择一个ORM框架对于数据库开发而言，说有如神助都不算夸张。</p>
+<h2 id="为项目添加greenDAO的Gradle插件"><a href="#为项目添加greenDAO的Gradle插件" class="headerlink" title="为项目添加greenDAO的Gradle插件"></a>为项目添加greenDAO的Gradle插件</h2><p>新建一个项目，项目源码地址放在文末。现在正式开始使用greenDAO了，既然greenDAO是一个辅助工具，和其他工具一样，第一步就是往项目里添加插件和依赖，好让项目构建的时候自动添加相关的库。具体操作如下：</p>
+<ol>
+<li>在build.gradle(Moudle:app)文件中添加相关插件和依赖：</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">buildscript &#123;</span><br><span class="line">    repositories &#123;</span><br><span class="line">        mavenCentral()</span><br><span class="line">    &#125;</span><br><span class="line">    dependencies &#123;</span><br><span class="line">        classpath &#39;org.greenrobot:greendao-gradle-plugin:3.2.1&#39;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">apply plugin: &#39;org.greenrobot.greendao&#39;</span><br><span class="line"></span><br><span class="line">dependencies &#123;</span><br><span class="line">    compile &#39;org.greenrobot:greendao:3.2.0&#39;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>插件和依赖库的最新版本可以关注<a href="https://github.com/greenrobot/greenDAO/blob/master/README.md#add-greendao-to-your-project" target="_blank" rel="noopener">官方github</a>，添加之后在文件中的效果：</p>
+<p><img src="http://img.crazypudding.com/greenDAO/add-gradle-plugin.png" alt="add-gradle-plugin"> <img src="http://img.crazypudding.com/greenDAO/add-greenDAO-configuration.png" alt="add-greenDAO-configuration"></p>
+<ol start="2">
+<li>在同一个文件中配置greenDAO Gradle插件。原则上讲这一步可以省略，但是为了便于管理，最好配置一下，而且官方建议最少设置版本号，其他的如果不设置则使用默认值：</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">greendao &#123;</span><br><span class="line">    schemaVersion 1</span><br><span class="line">    daoPackage &#39;com.crazypudding.greendaodemo.greendao.dao&#39;</span><br><span class="line">    targetGenDir &#39;src&#x2F;main&#x2F;java&#39;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如下图：</p>
+<p><img src="http://img.crazypudding.com/greenDAO/configure-gradle-plugin.png" alt="configure-gradle-plugin"></p>
+<p>添加完成点击右上角的<code>Sync now</code>会自动加载插件，由于插件在墙外，这是一个痛苦的过程，要加载多久就得拼脸了。PS.使用AS的时候最好能让它在全局代理的状态，这样会比较畅通，虽然这些设置都不一定能干得过硬性条件。。。</p>
+<p>好了，现在对这些配置表示懵逼不要紧，在一切准备工作就绪以后回过头来看会更清晰的。greenDAO插件所有可以配置的属性说明如下，：</p>
+<ul>
+<li><strong>schemaVersion:</strong>这是当前数据库模式的版本号(可以理解为数据库版本)，在升级数据库的时候会用到。默认设置成1，每次更新数据库，版本号只能增加</li>
+<li><strong>daoPackage:</strong>这是greenDAO自动生成的类所在的包名，默认和映射的Java对象Entity(后期会新建)的包名相同。greenDAO会自动生成DAOs、DaoMaster和DaoSession，DAOs对应Entity，另外两个是辅助类。</li>
+<li><strong>targetGenDir:</strong>自动生成的所有资源会被保存到这个位置，默认是在<code>build/generated/source/greendao</code>中。</li>
+<li><strong>generateTests:</strong>如果设置成<code>true</code>会自动生成单元测试文件</li>
+<li><strong>targetGenDirTests:</strong>单元测试文件保存的位置，默认是<code>src/androidTest/java</code></li>
+</ul>
+<ol start="3">
+<li>构建Entity模型。新建一个类，类名就是你希望的表名，我新建一个Company类：</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Entity</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Company</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Id</span>(autoincrement = <span class="keyword">true</span>)</span><br><span class="line">    <span class="keyword">private</span> Long id;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@NotNull</span></span><br><span class="line">    <span class="meta">@Property</span>(nameInDb = <span class="string">"EMPLOYEE_NAME"</span>)</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> salary;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Transient</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> tempUsageCount;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>没错，这样简单的步骤就完成了Entity的建模，这其实就是数据库表的结构，里面的属性就是表的字段名(也就是列名)，剩下的工作交给GgreenDAO去做就行了。如果你不止一个数据库表的话，需要多个Entity模型。现在可以使用<code>Ctrl+F9</code>来重新构建项目，或者在Android Studio中使用<code>Build&gt;Make Project</code>。</p>
+<p>这里先对这个类简单说明一下，如果你熟悉注解的话，大概就能明白了。前面说greenDAO3使用注解来产生相应的类，这样比之前的版本方便很多，不需要手动去用写一个generator(生成器)了。greenDAO的生成器会在重新构建项目的时候自动生成一个完整的Entity类，其中包括各个属性的getter和setter方法，所以你最终会看到的完整的Company类会是这样的：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Entity</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Company</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Id</span>(autoincrement = <span class="keyword">true</span>)</span><br><span class="line">    <span class="keyword">private</span> Long id;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@NotNull</span></span><br><span class="line">    <span class="meta">@Property</span>(nameInDb = <span class="string">"EMPLOYEE_NAME"</span>)</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> salary;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Transient</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> tempUsageCount;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Generated</span>(hash = <span class="number">2028949425</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Company</span><span class="params">(Long id, @NotNull String name, <span class="keyword">int</span> salary)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.id = id;</span><br><span class="line">        <span class="keyword">this</span>.name = name;</span><br><span class="line">        <span class="keyword">this</span>.salary = salary;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Generated</span>(hash = <span class="number">1096856789</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Company</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Long <span class="title">getId</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.id;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setId</span><span class="params">(Long id)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.id = id;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getName</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.name;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setName</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.name = name;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getSalary</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.salary;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setSalary</span><span class="params">(<span class="keyword">int</span> salary)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.salary = salary;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>你可能会发现在类中并没有tempUsageCount的getter和setter方法，这就是注解的作用了。Generator会根据注解来生成，而这些注解的意思就对应着SQLite建表时的各项限制了，他们把数据库表中的个字段映射成Java对象。</p>
+<h2 id="greenDAO的基本注解"><a href="#greenDAO的基本注解" class="headerlink" title="greenDAO的基本注解"></a>greenDAO的基本注解</h2><p><strong>@Entity：</strong>它会把当前类映射成默认以类名为表名的数据库表，每一个Entity对象对应着数据库表中的一行记录。当然像表名这些关于数据库表的设置也可以在 <strong>@Entity</strong>中进行设置。具体可以配置的信息官方描述如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Entity</span>(</span><br><span class="line">        <span class="comment">// If you have more than one schema, you can tell greenDAO</span></span><br><span class="line">        <span class="comment">// to which schema an entity belongs (pick any string as a name).</span></span><br><span class="line">        schema = <span class="string">"myschema"</span>,</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// Flag to make an entity "active": Active entities have update,</span></span><br><span class="line">        <span class="comment">// delete, and refresh methods.</span></span><br><span class="line">        active = <span class="keyword">true</span>,</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// Specifies the name of the table in the database.</span></span><br><span class="line">        <span class="comment">// By default, the name is based on the entities class name.</span></span><br><span class="line">        nameInDb = <span class="string">"AWESOME_USERS"</span>,</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// Define indexes spanning multiple columns here.</span></span><br><span class="line">        indexes = &#123;</span><br><span class="line">                <span class="meta">@Index</span>(value = <span class="string">"name DESC"</span>, unique = <span class="keyword">true</span>)</span><br><span class="line">        &#125;,</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// Flag if the DAO should create the database table (default is true).</span></span><br><span class="line">        <span class="comment">// Set this to false, if you have multiple entities mapping to one table,</span></span><br><span class="line">        <span class="comment">// or the table creation is done outside of greenDAO.</span></span><br><span class="line">        createInDb = <span class="keyword">false</span>,</span><br><span class="line"> </span><br><span class="line">        <span class="comment">// Whether an all properties constructor should be generated.</span></span><br><span class="line">        <span class="comment">// A no-args constructor is always required.</span></span><br><span class="line">        generateConstructors = <span class="keyword">true</span>,</span><br><span class="line"> </span><br><span class="line">        <span class="comment">// Whether getters and setters for properties should be generated if missing.</span></span><br><span class="line">        generateGettersSetters = <span class="keyword">true</span></span><br><span class="line">)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Company</span> </span>&#123;</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>@Id:</strong>被它标注的Java类属性被映射成数据库表中的id列，注意它一定是<code>Long</code>类型的，默认是主键，可以设置 <strong>autoincrement</strong>标识它是自增的<br><strong>@Property:</strong>通过这个注解可以设置列名，默认是将属性名的写法转换成数据库中全大写的写法，如本例中通过设置的<code>name</code>列在表中的名字是<code>EMPLOYEE_NAME</code>,如果不设置property属性列名就是<code>NAME</code>，如果有多个单词的话，每个单词中间会有下划线分隔开，前提是属性名是标准的驼峰命名法，这样才能识别每个单词。<br><strong>@NotNull:</strong>这个就简单了，就是限制这个列的插入不能为空<br><strong>@Transient:</strong>这个注解的意思就是只是一个临时数据，不会被写入到数据库中，所以上面的Company类中不会出现tempUsageCount属性的getter和setter方法了。</p>
+<p>当然还有像标识索引的 <strong>@Index</strong>、表示数据库表之间关系的 <strong>@ToOne</strong>等一些注解，又需要可以去官网了解。</p>
+<h2 id="grenDAO生成的类"><a href="#grenDAO生成的类" class="headerlink" title="grenDAO生成的类"></a>grenDAO生成的类</h2><p>Make Project之后，不仅会自动把你的Company类补全，还会自动生成三个类用来管理数据库，这三个类就是CompanyDao、DaoMaster和DaoSession，它们是greenDAO的核心类。生成的位置就是我们之前在Gradle插件中配置的路径：</p>
+<p><img src="http://img.crazypudding.com/greenDAO/make-project.png" alt="make-project"></p>
+<p><strong>DaoMaster:</strong>DaoMaster类是greenDao的入口点，它的内部类继承了DatabaseOpenHelper，可以生成database对象并且管理所有的DAO类<br><strong>DaoSession:</strong>DaoSession管理所有可用的Dao对象，为开发者提供操作数据的权限，相对Dao类而言，它还提供了更完整的增删改查的操作方法<br><strong>CompanyDao:</strong>通过这个类可以操作Entity(本例中是Company)，每一个Entity会生成一个相对应的Dao类。</p>
+<h2 id="greenDAO的使用"><a href="#greenDAO的使用" class="headerlink" title="greenDAO的使用"></a>greenDAO的使用</h2><p>通过以上的配置，基本上完成了项目的初步构建，最后再初始化数据库和greenDAO核心类就可以开始使用greenDAO相应的功能了。</p>
+<h3 id="初始化green-DAO"><a href="#初始化green-DAO" class="headerlink" title="初始化green DAO"></a>初始化green DAO</h3><p>官方推荐在Application类中对整个App进行一次初始化操作，所以我们新建一个类<code>MyApplication</code>:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyApplication</span> <span class="keyword">extends</span> <span class="title">Application</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> DaoSession daoSession;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.onCreate();</span><br><span class="line"></span><br><span class="line">        DevOpenHelper helper = <span class="keyword">new</span> DevOpenHelper(<span class="keyword">this</span>, <span class="string">"company-db"</span>);</span><br><span class="line">        Database db = helper.getWritableDb();</span><br><span class="line">        daoSession = <span class="keyword">new</span> DaoMaster(db).newSession();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> DaoSession <span class="title">getDaoSession</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> daoSession;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>原理和使用SQLiteOpenHelper类似，都是通过获得Database对象来对数据库进行操作，不过greenDAO之后获取了DaoSession对象，这样就进行完了初始化操作，之后要在Activity或者Fragment中操作数据库的话只需要调用getDaoSession()方法来取得操作CompanyDao的权限就行了。</p>
+<p>但是别忘了在<code>AndroidManifest.xml</code>文件中为<code>MyApplication.java</code>在<code>&lt;application&gt;</code>加入<code>name</code>属性，加入之后MyApplication类会在所有组件之前完成初始化，然后就可以在任何位置通过getApplication()访问greenDAO了。</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version="1.0" encoding="utf-8"?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">manifest</span> <span class="attr">xmlns:android</span>=<span class="string">"http://schemas.android.com/apk/res/android"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">package</span>=<span class="string">"com.crazypudding.greendaodemo"</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">application</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:name</span>=<span class="string">".MyApplication"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:allowBackup</span>=<span class="string">"true"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:icon</span>=<span class="string">"@mipmap/ic_launcher"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:label</span>=<span class="string">"@string/app_name"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:supportsRtl</span>=<span class="string">"true"</span></span></span><br><span class="line"><span class="tag">        <span class="attr">android:theme</span>=<span class="string">"@style/AppTheme"</span>&gt;</span></span><br><span class="line">        ...</span><br><span class="line">    <span class="tag">&lt;/<span class="name">application</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">manifest</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>现在我们在<code>MainActivity.java</code>的onCreate()方法中获取CompanyDao的实例：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//get the company DAO</span></span><br><span class="line">DaoSession daoSession = ((MyApplication)getApplication()).getDaoSession();</span><br><span class="line">mCompanyDao = daoSession.getCompanyDao();</span><br></pre></td></tr></table></figure>
+
+<p>这一系列初始化完成，CompanyDao对象也获取到了终于可以开始我们熟悉的增删改查操作了。</p>
+<h3 id="增"><a href="#增" class="headerlink" title="增"></a>增</h3><p>这一系列方法都很熟悉了，但是greenDao为我们做了封装，所以操作起来更简单，通过CompanyDao的构造方法初始化数值传入insert()方法:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Company employee = <span class="keyword">new</span> Company(<span class="keyword">null</span>, mName, mSalary);</span><br><span class="line">mCompanyDao.insert(employee);</span><br></pre></td></tr></table></figure>
+
+<p>案例中将这个方法封装在addEmployee()方法中，从编辑文本框获取输入的值传入Company的构造方法，然后清空编辑框，刷新ListView显示新的数据:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//add a employee by a name and the salary</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">addEmployee</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        getValue();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (mName.equals(<span class="string">""</span>)) &#123;</span><br><span class="line">            mNameEditor.setError(getString(R.string.name_required));</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        Company employee = <span class="keyword">new</span> Company(<span class="keyword">null</span>, mName, mSalary);</span><br><span class="line">        mCompanyDao.insert(employee);</span><br><span class="line">        cleanEditText();</span><br><span class="line">        refreshList();</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>效果如下：</p>
+<p><img src="http://img.crazypudding.com/greenDAO/add.gif" alt="add"></p>
+<h3 id="删"><a href="#删" class="headerlink" title="删"></a>删</h3><p>这里通过点击List中的每一个item获取其id，通过id来删除数据：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mCompanyDao.deleteByKey(id);</span><br></pre></td></tr></table></figure>
+
+<p>效果如下：</p>
+<p><img src="http://img.crazypudding.com/greenDAO/delete.gif" alt="delete"></p>
+<h3 id="改"><a href="#改" class="headerlink" title="改"></a>改</h3><p>通过greenDAO的封装的update()方法，通过对应的NAME更改数据：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Company employee = mCompanyDao.queryBuilder().where(CompanyDao.Properties.Name.eq(mName)).build().unique();</span><br><span class="line">    <span class="keyword">if</span> (employee != <span class="keyword">null</span>) &#123;</span><br><span class="line">        employee.setSalary(mSalary);</span><br><span class="line">        mCompanyDao.update(employee);</span><br><span class="line">        cleanEditText();</span><br><span class="line">        refreshList();</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>其实也是先通过了QueryBuilder()来找到对应的Entity，更换数据后在进行更新。</p>
+<p>效果如下：</p>
+<p><img src="http://img.crazypudding.com/greenDAO/update.gif" alt="update"></p>
+<h3 id="查"><a href="#查" class="headerlink" title="查"></a>查</h3><p>greenDAO中的查找方法是<code>queryBuilder()</code>，可以多次追加查找条件来准确定位数据位置：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Company employee = mCompanyDao.queryBuilder().where(CompanyDao.Properties.Name.eq(mName)).build().unique();</span><br></pre></td></tr></table></figure>
+
+<p>案例中使用了Android的SearchView来完成查找功能。效果如下：</p>
+<p><img src="http://img.crazypudding.com/greenDAO/query.gif" alt="query"></p>
+<p>像增删改查这一类操作其实都很简单，底层无非也就是封装了原生的SQL语句，所以具体的操作要根据需要来调用相应greenDAO的API，这些都可以在官网找到，就不一一赘述了。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>需要注意的一点是，在DaoMaster类中，greenDAO对于数据库的升级并没有提供很友好的操作，注释也提出了警告：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** WARNING: Drops all table on Upgrade! Use only during development. */</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">DevOpenHelper</span> <span class="keyword">extends</span> <span class="title">OpenHelper</span> </span>&#123;</span><br><span class="line">        ...</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onUpgrade</span><span class="params">(Database db, <span class="keyword">int</span> oldVersion, <span class="keyword">int</span> newVersion)</span> </span>&#123;</span><br><span class="line">            Log.i(<span class="string">"greenDAO"</span>, <span class="string">"Upgrading schema from version "</span> + oldVersion + <span class="string">" to "</span> + newVersion + <span class="string">" by dropping all tables"</span>);</span><br><span class="line">            dropAllTables(db, <span class="keyword">true</span>);</span><br><span class="line">            onCreate(db);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>WARNING: Drops all table on Upgrade! Use only during development.</strong><br>意思就是，在升级数据库的时候，greenDAO会删除所有的数据。从onUpgrade方法中也可以看出来，执行升级操作是先删除所以table再新建新的同名table，所以建议只在开发过程中调用DevOpenHelper。</p>
+<p>可以试着更换一下build.gradle文件中的schemaVersion，再次运行会发现数据都不见了。如果不涉及数据库升级的话，倒没有什么问题，一旦涉及到数据库需要升级的App，都需要自己重写一个MyOenHelper类重载onUpgrade方法。常见的方法是在重载的onUpgrade方法中利用数据迁移的方式，先把旧数据迁移到临时表中，新建新的表之后再移回到新的表中，最后删除临时表达到升级数据库并且保存数据的目的。</p>
+<p>一路实践下来，发现greenDAO对数据库的操作确实简化了很多，当然还有很多非常优秀的ORM框架，有时间再研究其他的吧。本文中案例源码地址<a href="https://github.com/CrazyPudding/ExerciseAboutAndroidSQLite/tree/greenDAO-demo" target="_blank" rel="noopener">传送门</a>。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Android/" rel="tag"># Android</a>
+              <a href="/tags/ORM/" rel="tag"># ORM</a>
+              <a href="/tags/Learning-Notes/" rel="tag"># Learning Notes</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2016/12/29/Learning-summary-of-SQLite/" rel="prev" title="SQLite基础学习总结">
+      <i class="fa fa-chevron-left"></i> SQLite基础学习总结
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2017/07/16/constraintlayout/" rel="next" title="ConstraintLayout学习小结">
+      ConstraintLayout学习小结 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+        </div>
+        
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="http://www.beian.miit.gov.cn/" rel="noopener" target="_blank">赣ICP备16009806号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Crazypudding</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">69k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">1:03</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              leancloudSelector(url).innerText = 'Counter not initialized! More info at console err msg.';
+              console.error('ATTENTION! LeanCloud counter has security bug, see how to solve it here: https://github.com/theme-next/hexo-leancloud-counter-security. \n However, you can still use LeanCloud without security, by setting `security` option to `false`.');
+            
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"d6IWzX7FjgQks0Y7UioDD24l-gzGzoHsz","app_key":"GMrkaVwqnkjwRbJGmzs42wHK","server_url":null,"security":true};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/medium-zoom@1/dist/medium-zoom.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://crazypudding.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  var disqus_config = function() {
+    this.page.url = "http://crazypudding.github.io/2017/01/05/Learn-tp-use-greenDAO/";
+    this.page.identifier = "2017/01/05/Learn-tp-use-greenDAO/";
+    this.page.title = "Android ORM框架学习-greenDAO的基本使用";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://crazypudding.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>
