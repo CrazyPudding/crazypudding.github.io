@@ -200,14 +200,14 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">12</span>
+          <span class="site-state-item-count">13</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-count">13</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -247,6 +247,110 @@
 
         <div class="content index posts-expand">
           
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://crazypudding.github.io/2020/06/29/how-flutter-rendering/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Crazypudding">
+      <meta itemprop="description" content="有道无术术尚可求，有术无道止于术">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CrazyPudding's Note">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/06/29/how-flutter-rendering/" class="post-title-link" itemprop="url">浅析 Flutter 渲染原理</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-06-29 12:30:00" itemprop="dateCreated datePublished" datetime="2020-06-29T12:30:00+08:00">2020-06-29</time>
+            </span>
+
+          
+            <span id="/2020/06/29/how-flutter-rendering/" class="post-meta-item leancloud_visitors" data-flag-title="浅析 Flutter 渲染原理" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2020/06/29/how-flutter-rendering/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2020/06/29/how-flutter-rendering/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>7.1k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>6 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>本文旨在记录学习 Flutter 在 Framework 层面的渲染原理时的所得，通过对整个渲染过程的整理，可以有效的理解 Widget 的行为，高效完成 UI 实现。</p>
+<h2 id="UI-编程的两种方式"><a href="#UI-编程的两种方式" class="headerlink" title="UI 编程的两种方式"></a>UI 编程的两种方式</h2><p>从 Web 到 Android 和 iOS，大家普遍熟知的便是命令式 UI 编程风格 (Imperative UI)，随着近年来 UI 框架的飞速发展，声明式 UI 编程风格 (Declarative UI) 逐步进入大家的视野。Flutter 则采用了声明式 UI 的思想来实现 UI。</p>
+<h3 id="Imperative-UI"><a href="#Imperative-UI" class="headerlink" title="Imperative UI"></a>Imperative UI</h3><p>所谓命令式 UI，即在实现 UI 时创建带有各种属性和方法的 UI 实例，如 UIView，随后在 UI 发生变更时调用这个实例对应的方法或属性的 <code>setter</code> 方法来修改。</p>
+<p>从下面这样一个例子入手:</p>
+<p><img src="http://img.crazypudding.com/flutterRenderingPipeline/declarativeUIchanges.png" alt="uiChanges"></p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2020/06/29/how-flutter-rendering/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
       
   
   
@@ -1161,107 +1265,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://crazypudding.github.io/2016/10/08/Study-on-firebase/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.jpg">
-      <meta itemprop="name" content="Crazypudding">
-      <meta itemprop="description" content="有道无术术尚可求，有术无道止于术">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="CrazyPudding's Note">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2016/10/08/Study-on-firebase/" class="post-title-link" itemprop="url">Firebase笔记(一)-初探Firebase</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2016-10-08 23:42:14" itemprop="dateCreated datePublished" datetime="2016-10-08T23:42:14+08:00">2016-10-08</time>
-            </span>
-
-          
-            <span id="/2016/10/08/Study-on-firebase/" class="post-meta-item leancloud_visitors" data-flag-title="Firebase笔记(一)-初探Firebase" title="阅读次数">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-eye"></i>
-              </span>
-              <span class="post-meta-item-text">阅读次数：</span>
-              <span class="leancloud-visitors-count"></span>
-            </span>
-  
-  <span class="post-meta-item">
-    
-      <span class="post-meta-item-icon">
-        <i class="far fa-comment"></i>
-      </span>
-      <span class="post-meta-item-text">Disqus：</span>
-    
-    <a title="disqus" href="/2016/10/08/Study-on-firebase/#disqus_thread" itemprop="discussionUrl">
-      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2016/10/08/Study-on-firebase/" itemprop="commentCount"></span>
-    </a>
-  </span>
-  
-  <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>3.1k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>3 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="Firebase是什么？"><a href="#Firebase是什么？" class="headerlink" title="Firebase是什么？"></a>Firebase是什么？</h2><p>做移动应用开发，基本离不开应用程序的前端开发和服务器数据的后台处理，尴尬的是移动应用开发者不一定都懂后端开发，这在一定程度上加大了开发移动应用程序的困难。不过近几年出了一款新型的服务，叫BaaS(Backend as a Service，后端服务系统)，是BaaS公司为移动开发者整合的云后端服务。也就是说，通过在云端的操作就可以处理一些简单的后端数据处理。BaaS供应商提供API，让开发者通过几行简单的代码就可以整合一些后端功能，比如数据存储，应用分析等。Firebase也是这样的BaaS。</p>
-<p>Firebase在2014年被谷歌收购后不断成长，谷歌对其进行了一些列的整改，在2016年的I/O大会上发布了Firebase2.0。新版的Firebase以Analytics为功能拓展了很多实用的功能，比如远程配置、云消息推送、奔溃报告等，而且目前可以免费使用，这对于开发者来讲无疑是一大福音。这是<a href="https://firebase.google.com" target="_blank" rel="noopener">Firebase官网</a>。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2016/10/08/Study-on-firebase/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1318,12 +1321,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">69k</span>
+    <span title="站点总字数">76k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">1:03</span>
+    <span title="站点阅读时长">1:09</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>

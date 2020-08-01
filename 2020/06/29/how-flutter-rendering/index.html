@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <meta name="msapplication-config" content="/images/browserconfig.xml">
+  <meta name="google-site-verification" content="v4WrTLM4pCJ7GqyDZCubQai7qb5ypHbCQYSA7cabnJA">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic|Dancing Script:300,300italic,400,400italic,700,700italic|Source Code Pro:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"crazypudding.github.io","root":"/","scheme":"Gemini","version":"8.0.0-rc.4","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":true,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":"disqus","storage":true,"lazyload":false,"nav":null,"activeClass":"disqus"},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="本文旨在记录学习 Flutter 在 Framework 层面的渲染原理时的所得，通过对整个渲染过程的整理，可以有效的理解 Widget 的行为，高效完成 UI 实现。 UI 编程的两种方式从 Web 到 Android 和 iOS，大家普遍熟知的便是命令式 UI 编程风格 (Imperative UI)，随着近年来 UI 框架的飞速发展，声明式 UI 编程风格 (Declarative UI)">
+<meta property="og:type" content="article">
+<meta property="og:title" content="浅析 Flutter 渲染原理">
+<meta property="og:url" content="http://crazypudding.github.io/2020/06/29/how-flutter-rendering/">
+<meta property="og:site_name" content="CrazyPudding&#39;s Note">
+<meta property="og:description" content="本文旨在记录学习 Flutter 在 Framework 层面的渲染原理时的所得，通过对整个渲染过程的整理，可以有效的理解 Widget 的行为，高效完成 UI 实现。 UI 编程的两种方式从 Web 到 Android 和 iOS，大家普遍熟知的便是命令式 UI 编程风格 (Imperative UI)，随着近年来 UI 框架的飞速发展，声明式 UI 编程风格 (Declarative UI)">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://img.crazypudding.com/flutterRenderingPipeline/declarativeUIchanges.png">
+<meta property="og:image" content="http://img.crazypudding.com/flutterRenderingPipeline/uiLayers.png">
+<meta property="og:image" content="http://img.crazypudding.com/flutterRenderingPipeline/simpleWidgetTree.png">
+<meta property="og:image" content="http://img.crazypudding.com/flutterRenderingPipeline/normalWidgetDemo.png">
+<meta property="og:image" content="http://img.crazypudding.com/flutterRenderingPipeline/treeRelationship.png">
+<meta property="og:image" content="http://img.crazypudding.com/flutterRenderingPipeline/updateUIWithTheSameWidget.gif">
+<meta property="og:image" content="http://img.crazypudding.com/flutterRenderingPipeline/updateUIWithDiffWidget.gif">
+<meta property="og:image" content="http://img.crazypudding.com/flutterRenderingPipeline/statefulTree.png">
+<meta property="og:image" content="http://img.crazypudding.com/flutterRenderingPipeline/statelessTree.png">
+<meta property="og:image" content="http://img.crazypudding.com/flutterRenderingPipeline/layoutDataFlow.png">
+<meta property="og:image" content="http://img.crazypudding.com/flutterRenderingPipeline/relayoutBoundary.png">
+<meta property="og:image" content="http://img.crazypudding.com/flutterRenderingPipeline/paintDataFlow.png">
+<meta property="og:image" content="http://img.crazypudding.com/flutterRenderingPipeline/paintLayers.png">
+<meta property="og:image" content="http://img.crazypudding.com/flutterRenderingPipeline/paintLayerTree.png">
+<meta property="og:image" content="http://img.crazypudding.com/flutterRenderingPipeline/paintDataFlowWithLayer.png">
+<meta property="og:image" content="http://img.crazypudding.com/flutterRenderingPipeline/repaintBoundary.png">
+<meta property="og:image" content="http://img.crazypudding.com/flutterRenderingPipeline/compositeScroll.png">
+<meta property="article:published_time" content="2020-06-29T04:30:00.000Z">
+<meta property="article:modified_time" content="2020-08-01T12:53:49.009Z">
+<meta property="article:author" content="Crazypudding">
+<meta property="article:tag" content="Learning Notes">
+<meta property="article:tag" content="Flutter">
+<meta property="article:tag" content="原理">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://img.crazypudding.com/flutterRenderingPipeline/declarativeUIchanges.png">
+
+<link rel="canonical" href="http://crazypudding.github.io/2020/06/29/how-flutter-rendering/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>浅析 Flutter 渲染原理 | CrazyPudding's Note</title>
+  
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-172930850-1"></script>
+    <script>
+      if (CONFIG.hostname === location.hostname) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'UA-172930850-1');
+      }
+    </script>
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?3c0226d1e15c67d14d87c4d6771bfb82";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <main class="main">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+        <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+        <span class="toggle-line toggle-line-first"></span>
+        <span class="toggle-line toggle-line-middle"></span>
+        <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">CrazyPudding's Note</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#UI-编程的两种方式"><span class="nav-number">1.</span> <span class="nav-text">UI 编程的两种方式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Imperative-UI"><span class="nav-number">1.1.</span> <span class="nav-text">Imperative UI</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Declarative-UI"><span class="nav-number">1.2.</span> <span class="nav-text">Declarative UI</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#渲染过程"><span class="nav-number">2.</span> <span class="nav-text">渲染过程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Build"><span class="nav-number">2.1.</span> <span class="nav-text">Build</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#UI-分层系统"><span class="nav-number">2.1.1.</span> <span class="nav-text">UI 分层系统</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Flutter-三棵树"><span class="nav-number">2.1.2.</span> <span class="nav-text">Flutter 三棵树</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Layout"><span class="nav-number">2.2.</span> <span class="nav-text">Layout</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#RenderObject"><span class="nav-number">2.2.1.</span> <span class="nav-text">RenderObject</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Constraints"><span class="nav-number">2.2.2.</span> <span class="nav-text">Constraints</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#RelayoutBoundary"><span class="nav-number">2.2.3.</span> <span class="nav-text">RelayoutBoundary</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Paint"><span class="nav-number">2.3.</span> <span class="nav-text">Paint</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#RepaintBoundary"><span class="nav-number">2.3.1.</span> <span class="nav-text">RepaintBoundary</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Composite"><span class="nav-number">2.4.</span> <span class="nav-text">Composite</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Thanks-To"><span class="nav-number">3.</span> <span class="nav-text">Thanks To</span></a></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Crazypudding"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Crazypudding</p>
+  <div class="site-description" itemprop="description">有道无术术尚可求，有术无道止于术</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">13</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/crazypudding" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;crazypudding" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+  </div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </header>
+
+      
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/crazypudding" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div id="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+      <div class="main-inner">
+        
+
+        <div class="content post posts-expand">
+          
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://crazypudding.github.io/2020/06/29/how-flutter-rendering/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Crazypudding">
+      <meta itemprop="description" content="有道无术术尚可求，有术无道止于术">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="CrazyPudding's Note">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          浅析 Flutter 渲染原理
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-06-29 12:30:00" itemprop="dateCreated datePublished" datetime="2020-06-29T12:30:00+08:00">2020-06-29</time>
+            </span>
+
+          
+            <span id="/2020/06/29/how-flutter-rendering/" class="post-meta-item leancloud_visitors" data-flag-title="浅析 Flutter 渲染原理" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Disqus：</span>
+    
+    <a title="disqus" href="/2020/06/29/how-flutter-rendering/#disqus_thread" itemprop="discussionUrl">
+      <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2020/06/29/how-flutter-rendering/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>7.1k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>6 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>本文旨在记录学习 Flutter 在 Framework 层面的渲染原理时的所得，通过对整个渲染过程的整理，可以有效的理解 Widget 的行为，高效完成 UI 实现。</p>
+<h2 id="UI-编程的两种方式"><a href="#UI-编程的两种方式" class="headerlink" title="UI 编程的两种方式"></a>UI 编程的两种方式</h2><p>从 Web 到 Android 和 iOS，大家普遍熟知的便是命令式 UI 编程风格 (Imperative UI)，随着近年来 UI 框架的飞速发展，声明式 UI 编程风格 (Declarative UI) 逐步进入大家的视野。Flutter 则采用了声明式 UI 的思想来实现 UI。</p>
+<h3 id="Imperative-UI"><a href="#Imperative-UI" class="headerlink" title="Imperative UI"></a>Imperative UI</h3><p>所谓命令式 UI，即在实现 UI 时创建带有各种属性和方法的 UI 实例，如 UIView，随后在 UI 发生变更时调用这个实例对应的方法或属性的 <code>setter</code> 方法来修改。</p>
+<p>从下面这样一个例子入手:</p>
+<p><img src="http://img.crazypudding.com/flutterRenderingPipeline/declarativeUIchanges.png" alt="uiChanges"></p>
+<a id="more"></a>
+
+<p>要实现从第一种状态到第二种状态的变更，通常需要使用选择器 <code>findViewById</code> 或类似函数获取到 ViewB 的实例 <code>b</code>，并调用相应的方法:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Imperative style</span></span><br><span class="line">ViewB b = findViewById();</span><br><span class="line">b.setColor(red);</span><br><span class="line">b.clearChildren();</span><br><span class="line">ViewC c3 = <span class="keyword">new</span> ViewC();</span><br><span class="line">b.add(c3);</span><br></pre></td></tr></table></figure>
+
+<h3 id="Declarative-UI"><a href="#Declarative-UI" class="headerlink" title="Declarative UI"></a>Declarative UI</h3><p>声明式 UI 相对来说减轻了开发者的负担，不需要考虑如何调用 UI 实例的方法来改变不同的状态，只需要开发者描述当前的 UI 状态 (即各属性的值)，框架会自动将 UI 从之前的状态切换到开发者描述的当前状态。</p>
+<p>在声明式 UI 框架中，UI 配置是不可变 (<strong>Immutable</strong>) 的，它只负责描述当前 UI 应有的样子。要变更 UI 时，UI 配置会在自身触发重建并构造一个新的配置。</p>
+<p>还是上面的例子，使用声明式 UI 来实现的话会相对简洁:</p>
+<figure class="highlight dart"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Declarative style</span></span><br><span class="line"><span class="keyword">return</span> ViewB(</span><br><span class="line">  color: red,</span><br><span class="line">  child: ViewC(...),</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<h2 id="渲染过程"><a href="#渲染过程" class="headerlink" title="渲染过程"></a>渲染过程</h2><p>那么在 Flutter 中，是如何把这种声明式的配置渲染到屏幕上的呢？首先看下 Flutter 渲染过程的整体步骤。</p>
+<p>Flutter 的整个渲染步骤如下: </p>
+<p><code>UserInput -&gt; Animation -&gt; Build -&gt; Layout -&gt; Paint -&gt; Composite -&gt; Rasterize</code></p>
+<p>从接收用户输入事件到将 UI 绘制到屏幕上需要经过 7 个步骤:</p>
+<ul>
+<li><strong>UserInput:</strong> 响应用户输入事件，如点击、长按、拖拽等</li>
+<li><strong>Animation:</strong> 根据用户输入事件确定动画效果</li>
+<li><strong>Build:</strong> 开始构建 Widget，将 UI 配置转换成可渲染的数据结构</li>
+<li><strong>Layout:</strong> 确定每个 Widget 的位置和大小</li>
+<li><strong>Paint:</strong> 将 Widget 绘制成用户看到的样子，生成图层或者 Texture</li>
+<li><strong>Composite:</strong> 把 <code>Paint</code> 过程生成图层或纹理按照顺序进行组合合成，以便可以高效的将 Widget 呈现到屏幕上</li>
+<li><strong>Rasterize:</strong> 将 <code>Composite</code> 过程合成的图层映射成物理像素显示到屏幕上</li>
+</ul>
+<p>本文将关注 Build -&gt; Composite 这 4 个过程。</p>
+<h3 id="Build"><a href="#Build" class="headerlink" title="Build"></a>Build</h3><p>在这个过程，Flutter 会将声明的 Widgets 进行结构化，最终整理成后续步骤能够处理的数据结构 - 树。经过 Build 过程，最终会得到三棵树: Widget tree、Element tree 和 Render tree。在进一步了解之前，先来看看 Flutter 的 UI 库。</p>
+<h4 id="UI-分层系统"><a href="#UI-分层系统" class="headerlink" title="UI 分层系统"></a>UI 分层系统</h4><p>在 UI 库方面，像整体架构分层一样，Flutter 对整个 UI 系统也有一个分层设计，通过上层对下层的不断封装，最终呈现给开发者的就是一个方便使用的 Widget 库。Flutter 的 UI 系统分为 4 层，每一层都依赖于下一层，其大致结构如下:</p>
+<p><img src="http://img.crazypudding.com/flutterRenderingPipeline/uiLayers.png" alt="uiLayers"></p>
+<ul>
+<li><p><strong>dart:ui:</strong> 这是 Dart 提供的 UI 库，主要是对 Engine Api 的封装，提供 Raw canvas、Raw text layout、Dart core api 等，用于实现最基础的 UI 绘制，灵活性和可控性极高，但由于都是比较原始的 Api，所以相对来说也比较繁琐。可参考一个简单的 <a href="http://git.baijiahulian.com/snippets/325" target="_blank" rel="noopener">RawHelloWorld Demo</a>，需要手动计算大小和位置，样板代码过多。</p>
+</li>
+<li><p><strong>Rendering:</strong> 对 <code>dart:ui</code> 层的简单封装，提供了布局抽象功能，在 UI 实现方面比 <code>dart:ui</code> 简便很多，可参考简单的 <a href="http://git.baijiahulian.com/snippets/326" target="_blank" rel="noopener">RenderingHelloWorld Demo</a>。但是在输入事件的处理上还是需要较为繁琐的捕获触摸点，判断点击区域等计算，可参考简单的 <a href="http://git.baijiahulian.com/snippets/327" target="_blank" rel="noopener">RenderingInput Demo</a>。</p>
+</li>
+<li><p><strong>Widgets:</strong> 对 <code>Rendering</code> 层的封装，提供了组合抽象的能力，<code>Rendering</code> 层的每一个类在 <code>Widgets</code> 层都有一个与之对应的实现类，例如: <code>Rendering</code> 层有一个 <code>RenderObject</code>，在 <code>Widgets</code> 层有一个 <code>RenderBox</code> 与之对应，提供了更为具体的能力。</p>
+</li>
+<li><p><strong>Material、Cupertino:</strong> 在 <code>Widgets</code> 之上，根据 <code>Android</code> 和 <code>iOS</code> 的不同设计风格提供了对应的组件实现，是开发中用到最多的一层</p>
+</li>
+</ul>
+<p>在开发过程中，将不同的 <code>Widget</code> 堆叠到一起可以实现各种各样丰富的效果，比如实现一个文字居中的 HelloWorld 程序，可以这样写:</p>
+<figure class="highlight dart"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> main() =&gt; runApp(</span><br><span class="line">      <span class="keyword">const</span> Center(</span><br><span class="line">        child: Text(</span><br><span class="line">          <span class="string">'Hello World!'</span>,</span><br><span class="line">          textDirection: TextDirection.ltr,</span><br><span class="line">        ),</span><br><span class="line">      ),</span><br><span class="line">    );</span><br></pre></td></tr></table></figure>
+
+<h4 id="Flutter-三棵树"><a href="#Flutter-三棵树" class="headerlink" title="Flutter 三棵树"></a>Flutter 三棵树</h4><p>在上面的例子中，咱们其实得到的就是一棵 <code>Widget 树</code>，<code>Flutter</code> 会将上面的代码整合成如下的数据结构:</p>
+<p><img src="http://img.crazypudding.com/flutterRenderingPipeline/simpleWidgetTree.png" alt="simpleWidgetTree"></p>
+<p>如果需要改变背景色，可以在 <code>Widget 树</code>中再增加一个 <code>Widget</code>:</p>
+<figure class="highlight dart"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> main() =&gt; runApp(</span><br><span class="line">      Container(</span><br><span class="line">        color: Color(<span class="number">0xFFFF6117</span>),</span><br><span class="line">        child: <span class="keyword">const</span> Center(</span><br><span class="line">          child: Text(</span><br><span class="line">            <span class="string">'Hello World!'</span>,</span><br><span class="line">            textDirection: TextDirection.ltr,</span><br><span class="line">          ),</span><br><span class="line">        ),</span><br><span class="line">      ),</span><br><span class="line">    );</span><br></pre></td></tr></table></figure>
+
+<p>最终得到这样一棵 <code>Widget 树</code> 及其最终呈现的效果:</p>
+<p><img src="http://img.crazypudding.com/flutterRenderingPipeline/normalWidgetDemo.png" alt="normalWidgetDemo"></p>
+<p>至此，可以看到，咱们写的所有代码都是以 <code>Widget</code> 形式呈现的，在 <code>Widget</code> 的官方文档中，开头就有这样一句话:</p>
+<blockquote>
+<p>A widget is an <strong>immutable</strong> description of part of a user interface. </p>
+</blockquote>
+<p>这句话传递了两个信息:</p>
+<ol>
+<li><code>Widget</code> 是指一部分 UI 的描述</li>
+<li><code>Widget</code> 是不可变的 (Immutable)</li>
+</ol>
+<p>第一个信息显而易见，各个 <code>Widget</code> 会根据我们所写的属性 (在 Flutter 里指状态 - State) 展示在屏幕上。那么第二个信息，如果 <code>Widget</code> 是不可变的，而且用的是声明式 UI，那么随着用户的操作或者数据的变更，UI 是怎么更新的呢？其实在 <code>Flutter</code> 中，除了 <code>Widget 树</code>，还有 <code>Element 树</code> 和 <code>Render 树</code>，这三棵树各司其职，完成了 <code>Flutter</code> 的渲染更新。其主要功能如下:</p>
+<table>
+<thead>
+<tr>
+<th align="center">Widget</th>
+<th align="center">Element</th>
+<th align="center">RenderObject</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">Element 的配置描述 <br/><br/> 持有属性值 <br/> 提供公共 Api</td>
+<td align="center">Widget 在树中特定位置的一个实例 <br/><br/> 在 UI 结构中保留位置 <br/> 管理父级/子级的关系</td>
+<td align="center">Render 树中的对象，主管渲染 <br/><br/> 测量自身 Size 并进行绘制 <br/> 放置子节点 <br/> 声明输入事件</td>
+</tr>
+</tbody></table>
+<p>在配置好 <code>Widget</code> 后，<code>Flutter</code> 会生成一个对应的 <code>Element</code>，而 <code>Element</code> 又会调用 <code>Widget</code> 的方法生成一个 <code>RenderObject</code>， 依此类推，这样就生成了三棵树，<code>Element</code> 同时持有 <code>Widget</code> 和 <code>RenderObject</code> 的引用，如下图:</p>
+<p><img src="http://img.crazypudding.com/flutterRenderingPipeline/treeRelationship.png" alt="treeRelationship"></p>
+<p>在需要更新 UI 的时候，<code>Flutter</code> 会遍历三棵树，从 <code>Widget 树</code> 中需要更新的子树开始，对比每个子节点 <code>Widget</code> 的 <code>runtimeType</code> 和 <code>key</code>，这时会有两种情况:</p>
+<ol>
+<li><code>runtimeType</code> 及 <code>key</code> 的值相同，则认为是同一个 <code>Widget</code>，<code>Flutter</code> 会复用其对应的 <code>Element</code> 和 <code>RenderObject</code> 节点，只更新 <code>RenderObject</code> 的属性值，最终从 <code>Render 树</code> 中找到渲染对象并将其更新。其演示图如下:</li>
+</ol>
+<p><img src="http://img.crazypudding.com/flutterRenderingPipeline/updateUIWithTheSameWidget.gif" alt="updateUIWithTheSameWidget"></p>
+<ol start="2">
+<li><code>runtimeTpe</code> 或 <code>key</code> 的值不同，则认为不是同一个 <code>Widget</code>，不可复用，需要重新创建对应的 <code>Element</code> 和 <code>RenderObject</code>。其演示图如下:</li>
+</ol>
+<p><img src="http://img.crazypudding.com/flutterRenderingPipeline/updateUIWithDiffWidget.gif" alt="updateUIWithDiffWidget"></p>
+<p>至此，<code>Flutter</code> 的三棵树就形成了，有一点需要注意的是，<code>Widget</code> 包括纯展示型和组合型，纯展示型 <code>Widget</code> 就是指最基础的 <code>RenderObjectWidget</code>，如 <code>Center</code>、<code>Text</code> 等，而组合型 <code>Widget</code> 有两种，分别是 <code>StatefulWidget</code> 和 <code>StatelessWidget</code>，这两个 <code>Widget</code> 相当于是 <code>RenderObjectWidget</code> 的包装类，它们在生成树时略有不同，因为它们没有对应的 <code>RenderObject</code>，如下图:</p>
+<p><img src="http://img.crazypudding.com/flutterRenderingPipeline/statefulTree.png" alt="statefulTree"></p>
+<p><img src="http://img.crazypudding.com/flutterRenderingPipeline/statelessTree.png" alt="statelessTree"></p>
+<p>以上就是整个 <code>Build</code> 过程了，在 <code>Flutter</code> 的世界里，有一个很重要的原理，即 <code>Aggressive Composability</code>，意思是在 <code>Flutter</code> 中，要实现一个复杂的 UI，都是通过组合各种更基础的 <code>Widget</code> 来实现的。在递归遍历 <code>Widget 树</code> 的时候，触底条件为遍历到 <code>RenderObjectWidget</code>，这意味着在遇到最基础的 <code>Widget</code> 时结束遍历。由于 UI 是由各种 <code>Widget</code> 组合实现的，所以随着 UI 复杂性的提升，树的层级也会越来越深，为了提升性能，<code>Flutter</code> 在接下来的步骤里做了优化。</p>
+<h3 id="Layout"><a href="#Layout" class="headerlink" title="Layout"></a>Layout</h3><p><code>Flutter</code> 的渲染过程遵循一个原则: 简单即高效。主要体现在以下几方面:</p>
+<ol>
+<li><p>遍历 <code>Render 树</code> 时只做一次深度优先遍历，在遍历过程中传递数据，实现亚线形时间复杂度的布局和绘制；</p>
+</li>
+<li><p>采用盒子约束模型 (BoxConstraints) 布局，可以生成各种复杂的布局方案；</p>
+</li>
+<li><p>利用图层合成技术实现结构性重绘，即只重绘有需要的子树，充分利用当代硬件的图层合成能力。</p>
+</li>
+</ol>
+<h4 id="RenderObject"><a href="#RenderObject" class="headerlink" title="RenderObject"></a>RenderObject</h4><p>虽然 <code>Flutter</code> 有三棵树，但是在 <code>Layout</code> 及以后过程中，真正执行遍历操作是在 <code>Render 树</code> 上。所以，<code>Render 树</code> 上的节点 - <code>RenderObject</code> 有着举足轻重的作用。</p>
+<p><code>RenderObject</code> 是 <code>Rendering</code> 层的一个抽象类，主要提供了一个关于 <code>Layout</code> 的抽象概念，其几大特性如下:</p>
+<ul>
+<li><p>没有坐标系统</p>
+</li>
+<li><p>知道父节点，但不知道子节点是谁</p>
+</li>
+<li><p>虽然不知道子节点是谁，但是知道如何访问子节点。这样一来，就可以不限制子节点模型了，一个 <code>RenderObject</code> 可以拥有一个子节点，也可以拥有多个子节点，因为它知道如何访问这些子节点</p>
+</li>
+<li><p>以抽象的方式进行 <code>Layout</code> 和 <code>Paint</code>。提供了这两种能力，但是不具体实现如何进行</p>
+</li>
+<li><p>使用 <code>parentData</code> 属性存储子节点的位置信息</p>
+</li>
+</ul>
+<p><code>RenderObject</code> 携带的两个信息穿梭于整个 <code>Layout</code> 过程，<code>Constraints</code> 以及 <code>Sizes</code>，<code>RenderObject</code> 将 <code>Constraints</code> 传给子节点，子节点在完成自己的计算后将 <code>Sizes</code> 回传给 <code>RenderObject</code>，整个数据流向如下图，<code>Flutter</code> 在一次遍历中完成这种数据传递:</p>
+<p><img src="http://img.crazypudding.com/flutterRenderingPipeline/layoutDataFlow.png" alt="layoutDataFlow"></p>
+<p>虽然拥有了 <code>Layout</code> 过程的数据流程及大概思路，但是 <code>RenderObject</code> 是一个抽象的概念，所以它并不知道如何去执行具体的操作，所以<code>Flutter</code> 又增加了对其的实现，其中包括 <code>RenderBox</code> 及 <code>RenderSliver</code>，分别对应普通 <code>Widget</code> 及可滑动的 <code>Widget</code>。</p>
+<p>以 <code>RenderBox</code> 为例，实现了二维笛卡尔坐标系，增加了 <code>Height</code> 和 <code>Width</code> 属性，这样便可以根据父节点传下来的 <code>Constraints</code> 计算自己的大小，从而让父节点来确定自己的位置。</p>
+<h4 id="Constraints"><a href="#Constraints" class="headerlink" title="Constraints"></a>Constraints</h4><p>前面也说了，<code>Flutter</code> 采用盒子约束模型，也就是这个 <code>Constraints</code>，而 <code>Layout</code> 过程又依赖于父节点传下来的 <code>Constraints</code>，那么这个 <code>Constraints</code> 到底是何方神圣呢？</p>
+<p>顾名思义，<code>Constraints</code> 就是一种约束。仍然以作用于 <code>RenderBox</code> 的 <code>BoxConstraints</code> 为例，它提供了 <code>minWidth</code>、<code>maxWidth</code>、<code>minHeight</code>、<code>maxHeight</code> 4 个属性，用以对子节点进行约束，接收该 <code>Constraints</code> 的子节点在计算自己的大小时就有了两个条件: </p>
+<ul>
+<li>minWidth &lt;= width &lt;= maxWidth</li>
+<li>minHeight &lt;= height &lt;= maxHeight</li>
+</ul>
+<p>在向下遍历子节点时，将自身的 <code>Constraints</code> 传递下去，子节点再将自己的 <code>Constraints</code> 向下传递，递归触底时将计算好的 <code>Size</code> 向上传递，根据所有子节点的 <code>Size</code> 最终确定自身的 <code>Size</code> 再向上传递，递归结束则完成整个 <code>Layout</code> 过程，此时所有节点的大小已经确定了，而节点的位置则由父节点根据每个子节点的大小来确定，也就是说，第一个子节点的位置从父节点的左上角开始，第二个子节点从第一个子节点右上角开始，依此类推。</p>
+<h4 id="RelayoutBoundary"><a href="#RelayoutBoundary" class="headerlink" title="RelayoutBoundary"></a>RelayoutBoundary</h4><p>至此，我们已经知道了 <code>Layout</code> 的整体过程。思考一下，如果每次 UI 更新都需要从头开始遍历的话，随着 UI 的复杂化，那 <code>Layout</code> 的成本还是很高的，这时 <code>Flutter</code> 引进了一个标记 - <code>RelayoutBoundary</code>，如下图:</p>
+<p><img src="http://img.crazypudding.com/flutterRenderingPipeline/relayoutBoundary.png" alt="relayoutBoundary"></p>
+<p>在需要更新时，如果有这个标记，那么在 <code>Layout</code> 过程中就不会对标记以上的节点进行 <code>Relayout</code> 操作，这样一来，每次只需要对一小部分子树进行重新布局了，效率就会提高很多。当然这个标记不需要手动添加，在 <code>Flutter</code> 提供的 <code>Widget</code> 中已经根据实际情况做好了设置，这种实际情况就是，如果某个节点的子树的大小由该节点决定的话，就会添加 <code>RelayoutBoundary</code>。例如，该节点向下传递的 <code>Constraints</code> 为 <code>tight</code> 类型，即 <code>minWidth = maxWidth</code> 且 <code>minHeight = maxHeight</code>，子节点无法自行调节大小，因为可选范围被固定了。</p>
+<h3 id="Paint"><a href="#Paint" class="headerlink" title="Paint"></a>Paint</h3><p>经过 <code>Layout</code> 过程之后，剩下要做的就是把每个节点绘制出来，理想情况就是从根节点开始依次遍历根据父节点给定的偏移量进行绘制就行了，因为不涉及大小、定位等问题，只需要执行 <code>paint</code> 操作。其间的数据流向应该如下所示: </p>
+<p><img src="http://img.crazypudding.com/flutterRenderingPipeline/paintDataFlow.png" alt="paintDataFlow"></p>
+<p>但实际情况往往会更复杂一些。假设遇到下图的情况: </p>
+<p><img src="http://img.crazypudding.com/flutterRenderingPipeline/paintLayers.png" alt="paintLayers"></p>
+<p>视频内容来自于系统提供的不需要和用户进行交互的硬件，<code>Flutter</code> 只负责将其提供的 <code>Texture</code> 进行绘制，但如果需要给整个画面添加一个背景，而且在视频内容上层添加操作控件，例如暂停、播放之类的。这就意味着需要将整个画面拆分为不同的图层进行绘制了，最终再将图层进行组合合成形成我们希望的视觉效果。</p>
+<p><img src="http://img.crazypudding.com/flutterRenderingPipeline/paintLayerTree.png" alt="paintLayerTree"></p>
+<p>从上面的例子来讲，在绘制 <code>Flutter</code> 进行深度优先遍历，依次绘制视频背景层，即蓝色节点，之后绘制视频内容层时，为了正确绘制这些 <code>Texture</code>，<code>Flutter</code> 将内容绘制到一个独立的图层，即黄色节点，在以次绘制完 1、2、3、4 节点后，回到第 2 个节点，发现在这个节点还需要绘制更多的内容，这时又添加了一个新的独立图层，在这个新的图层上继续绘制剩余的内容，在这种情况下，除了父节点向下传递偏移量 Offset，子节点还需要把目标图层传回给父节点，这时数据流向图是这样的:</p>
+<p><img src="http://img.crazypudding.com/flutterRenderingPipeline/paintDataFlowWithLayer.png" alt="paintDataFlowWithLayer"></p>
+<h4 id="RepaintBoundary"><a href="#RepaintBoundary" class="headerlink" title="RepaintBoundary"></a>RepaintBoundary</h4><p>从上图可以看到，如果黄色图层的内容对绿色图层有影响，那么当黄色图层重绘时，节点 5、6 都需要重绘，而实际上节点 6 与黄色节点 4 并没有相互关系，这样就会造成多余的重绘操作了，而且在这种影响下，可能节点 2 也需要被重绘，那原则上相当于整棵树都需要重绘，这与 <code>Layout</code> 过程遇到的问题是类似的，解决方案也类似，如果只想针对局部子树进行重绘，只需要在这棵子树添加一个标记 - <code>RepaintBoundary</code>，这样一来，重绘操作就只发生在相关的子树中了，这时最终的图层结构如下，<code>RepaintBoundary</code> 前后节点的目标图层都相对独立，互不影响:</p>
+<p><img src="http://img.crazypudding.com/flutterRenderingPipeline/repaintBoundary.png" alt="repaintBoundary"></p>
+<p>同样的，<code>Flutter</code> 提供的 <code>Widget</code> 也都做好了正确的 <code>RepaintBoundary</code> 标记，除非完全自定义一个复杂的 <code>Widget</code>，否则不需要开发者考虑手动添加 <code>RepaintBoundary</code>。</p>
+<h3 id="Composite"><a href="#Composite" class="headerlink" title="Composite"></a>Composite</h3><p>在 <code>Paint</code> 过程中产生了很多图层 (layers)，在 <code>Composite</code> 过程中会将多个小碎片组合合成为一个新的图层，比如上面例子中的 节点 2 和节点 5，通过这些图层可以快速的更新 UI，因为 <code>Paint</code> 过程确定了某个图层应有的样子，可以通过改变图层的偏移量来更新 UI，而不需要再次遍历 <code>Render 树</code>。这一点再滚动类 <code>Widget</code> 的体现尤为明显。</p>
+<p><img src="http://img.crazypudding.com/flutterRenderingPipeline/compositeScroll.png" alt="compositeScroll"></p>
+<p>假设滚动有一个可滚动列表如上，假如不复用图层的话，每滚动 1 像素都需要进行一次 <code>Relayout</code> 和 <code>Repaint</code>，这消耗是非常大的，所以 <code>Flutter</code> 将每个 Item 都合成到一个独立的图层，如图中每种颜色代表一个图层，这样一来，在滚动的时候只需要改变每个图层的偏移量，而不需要进行 <code>Relayout</code> 了，而且只需要生成有限个图层就可以实现无限长度的滚动列表，因为被移出屏幕的图层可以被重新利用，这种图层复用机制在很大程度上提升了 <code>Flutter</code> 的性能。</p>
+<p>至此，已经从 Framework 层面梳理完 <code>Flutter</code> 的渲染过程了。在日常开发中，开发者应该多加留意各个 <code>Widget</code> 的 <code>Constraints</code>，因为这关系到 UI 最终呈现出来的样式，也许 UI 不是你想要的样子只是因为 <code>Constraints</code> 在搞怪。</p>
+<h2 id="Thanks-To"><a href="#Thanks-To" class="headerlink" title="Thanks To"></a>Thanks To</h2><ul>
+<li><a href="https://flutter.dev/docs/resources/inside-flutter" target="_blank" rel="noopener">Inside Flutter</a></li>
+<li><a href="https://flutter.dev/docs/development/ui/layout/constraints" target="_blank" rel="noopener">Understanding constraints</a></li>
+<li><a href="https://www.youtube.com/watch?v=UUfXWzp0-DU" target="_blank" rel="noopener">Flutter’s Rendering Pipeline</a></li>
+<li><a href="https://www.youtube.com/watch?v=dkyY9WCGMi0" target="_blank" rel="noopener">Flutter’s Layered Design</a></li>
+<li><a href="https://www.youtube.com/watch?v=996ZgFRENMs" target="_blank" rel="noopener">How Flutter renders Widgets</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Learning-Notes/" rel="tag"># Learning Notes</a>
+              <a href="/tags/Flutter/" rel="tag"># Flutter</a>
+              <a href="/tags/%E5%8E%9F%E7%90%86/" rel="tag"># 原理</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/04/16/learning-jvm-build-my-openjdk/" rel="prev" title="JVM 之旅——编译 OpenJDK">
+      <i class="fa fa-chevron-left"></i> JVM 之旅——编译 OpenJDK
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+        </div>
+        
+    
+  <div class="comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+    </div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="http://www.beian.miit.gov.cn/" rel="noopener" target="_blank">赣ICP备16009806号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Crazypudding</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">76k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">1:09</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+<script>
+  (function() {
+    function leancloudSelector(url) {
+      url = encodeURI(url);
+      return document.getElementById(url).querySelector('.leancloud-visitors-count');
+    }
+
+    function addCount(Counter) {
+      var visitors = document.querySelector('.leancloud_visitors');
+      var url = decodeURI(visitors.id);
+      var title = visitors.dataset.flagTitle;
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          if (results.length > 0) {
+            var counter = results[0];
+            leancloudSelector(url).innerText = counter.time + 1;
+            Counter('put', '/classes/Counter/' + counter.objectId, { time: { '__op': 'Increment', 'amount': 1 } })
+              .catch(error => {
+                console.error('Failed to save visitor count', error);
+              });
+          } else {
+              leancloudSelector(url).innerText = 'Counter not initialized! More info at console err msg.';
+              console.error('ATTENTION! LeanCloud counter has security bug, see how to solve it here: https://github.com/theme-next/hexo-leancloud-counter-security. \n However, you can still use LeanCloud without security, by setting `security` option to `false`.');
+            
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    function showTime(Counter) {
+      var visitors = document.querySelectorAll('.leancloud_visitors');
+      var entries = [...visitors].map(element => {
+        return decodeURI(element.id);
+      });
+
+      Counter('get', '/classes/Counter?where=' + encodeURIComponent(JSON.stringify({ url: { '$in': entries } })))
+        .then(response => response.json())
+        .then(({ results }) => {
+          for (let url of entries) {
+            let target = results.find(item => item.url === url);
+            leancloudSelector(url).innerText = target ? target.time : 0;
+          }
+        })
+        .catch(error => {
+          console.error('LeanCloud Counter Error', error);
+        });
+    }
+
+    let { app_id, app_key, server_url } = {"enable":true,"app_id":"d6IWzX7FjgQks0Y7UioDD24l-gzGzoHsz","app_key":"GMrkaVwqnkjwRbJGmzs42wHK","security":true};
+    function fetchData(api_server) {
+      var Counter = (method, url, data) => {
+        return fetch(`${api_server}/1.1${url}`, {
+          method,
+          headers: {
+            'X-LC-Id'     : app_id,
+            'X-LC-Key'    : app_key,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+      };
+      if (CONFIG.page.isPost) {
+        if (CONFIG.hostname !== location.hostname) return;
+        addCount(Counter);
+      } else if (document.querySelectorAll('.post-title-link').length >= 1) {
+        showTime(Counter);
+      }
+    }
+
+    let api_server = app_id.slice(-9) !== '-MdYXbMMI' ? server_url : `https://${app_id.slice(0, 8).toLowerCase()}.api.lncldglobal.com`;
+
+    if (api_server) {
+      fetchData(api_server);
+    } else {
+      fetch('https://app-router.leancloud.cn/2/route?appId=' + app_id)
+        .then(response => response.json())
+        .then(({ api_server }) => {
+          fetchData('https://' + api_server);
+        });
+    }
+  })();
+</script>
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/medium-zoom@1/dist/medium-zoom.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+  function loadCount() {
+    var d = document, s = d.createElement('script');
+    s.src = 'https://crazypudding.disqus.com/count.js';
+    s.id = 'dsq-count-scr';
+    (d.head || d.body).appendChild(s);
+  }
+  // defer loading until the whole page loading is completed
+  window.addEventListener('load', loadCount, false);
+</script>
+<script>
+  var disqus_config = function() {
+    this.page.url = "http://crazypudding.github.io/2020/06/29/how-flutter-rendering/";
+    this.page.identifier = "2020/06/29/how-flutter-rendering/";
+    this.page.title = "浅析 Flutter 渲染原理";
+    };
+  NexT.utils.loadComments(document.querySelector('#disqus_thread'), () => {
+    if (window.DISQUS) {
+      DISQUS.reset({
+        reload: true,
+        config: disqus_config
+      });
+    } else {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://crazypudding.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', '' + +new Date());
+      (d.head || d.body).appendChild(s);
+    }
+  });
+</script>
+
+</body>
+</html>
